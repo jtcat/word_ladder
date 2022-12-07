@@ -43,6 +43,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 
 //
@@ -59,6 +60,17 @@
 typedef struct adjacency_node_s  adjacency_node_t;
 typedef struct hash_table_node_s hash_table_node_t;
 typedef struct hash_table_s      hash_table_t;
+typedef struct ptr_deque_s 		 ptr_deque_t;
+
+struct ptr_deque_s
+{
+	void 	**circular_array;
+	size_t	hi;
+	size_t	lo;
+	size_t	size;
+	size_t	max_size;
+	int		full;
+};
 
 struct adjacency_node_s
 {
@@ -90,6 +102,69 @@ struct hash_table_s
 	hash_table_node_t **heads;         // the heads of the linked lists
 };
 
+//
+// allocation and deallocation of deque
+//
+
+static ptr_deque_t *allocate_ptr_deque(size_t max_size)
+{
+	ptr_deque_t	*deque = (ptr_deque_t *)malloc(sizeof(ptr_deque_t));
+	if(deque == NULL)
+	{
+		fprintf(stderr,"allocate_ptr_deque: out of memory\n");
+		exit(1);
+	}
+	deque->circular_array = (void **)malloc(sizeof(void *) * max_size);
+	if(deque->circular_array == NULL)
+	{
+		fprintf(stderr,"allocate_ptr_deque->circular_array: out of memory\n");
+		free(deque);
+		exit(1);
+	}
+	deque->max_size = max_size;
+	deque->size = 0;
+	deque->full = 0;
+	deque->hi = 0;
+	deque->lo = 0;
+	return deque;
+}
+
+static void free_ptr_deque(ptr_deque_t *deque)
+{
+	free(deque->circular_array);
+	free(deque);
+}
+
+//
+// deque methods
+//
+
+static void deque_put_hi(ptr_deque_t *deque, void *ptr)
+{
+	assert(deque->size < deque->max_size);
+	deque->hi = (deque->hi + 1) % deque->max_size;
+	deque->circular_array[deque->hi] = ptr;
+	deque->size++;
+}
+
+static void *deque_get_low(ptr_deque_t *deque)
+{
+	assert(deque->size > 0);
+	void *ret = deque->circular_array[deque->lo];
+	deque->lo = deque->lo == 0 ? deque->max_size : deque->lo;
+	deque->size--;
+	return ret;
+}
+
+static void *deque_get_hi(ptr_deque_t *deque)
+{
+	assert(deque->size > 0);
+	void *ret = deque->circular_array[deque->hi];
+	deque->hi = deque->hi == 0 ? deque->max_size : deque->hi;
+	deque->size--;
+	return ret;
+}
+
 
 //
 // allocation and deallocation of linked list nodes (done)
@@ -107,13 +182,6 @@ static adjacency_node_t *allocate_adjacency_node(void)
 	}
 	return node;
 }
-
-static void insert_adjacency_node(adjacency_node_t **head, adjacency_node_t *new)
-{
-	new->next = *head;
-	*head = new;
-}
-
 
 static void free_adjacency_node(adjacency_node_t *node)
 {
@@ -249,7 +317,6 @@ static hash_table_node_t *find_word(hash_table_t *hash_table,const char *word,in
 	unsigned int i;
 
 	i = crc32(word) % hash_table->hash_table_size;
-	//printf("hash: %lu\n", i);
 	node = hash_table->heads[i];
 	while (node)
 	{
@@ -296,11 +363,13 @@ static void add_edge(hash_table_t *hash_table,hash_table_node_t *from,const char
 	hash_table_node_t *to,*from_representative,*to_representative;
 	adjacency_node_t *link;
 
-	to = find_word(hash_table,word,1);
-	to->visited = 1;
+	to = find_word(hash_table,word,0);
+	if (!to)
+		return;
 	link = allocate_adjacency_node();
 	link->vertex = to;
-	insert_adjacency_node(&(from->head), link);
+	link->next = from->head;
+	from->head = link;
 
 	from_representative = find_representative(from);
 	to_representative = find_representative(to);
@@ -368,8 +437,6 @@ static void make_utf8_string(const int *individual_characters,char word[_max_wor
 
 static void similar_words(hash_table_t *hash_table,hash_table_node_t *from)
 {
-	if (from->visited)
-		return ;
 	static const int valid_characters[] =
 	{ // unicode!
 		0x2D,                                                                       // -
@@ -414,7 +481,7 @@ static int breadh_first_search(int maximum_number_of_vertices,hash_table_node_t 
 //		for(node = hash_table->heads[i];node != NULL;node = node->next)
 //			similar_words(hash_table,node);
 //	}
-//	return -1;
+	return -1;
 }
 
 
@@ -422,11 +489,48 @@ static int breadh_first_search(int maximum_number_of_vertices,hash_table_node_t 
 // list all vertices belonging to a connected component (complete this)
 //
 
+static void mark_all_vertices(hash_table_t *hash_table)
+{
+	hash_table_node_t *node;
+
+	for(size_t i = 0u;i < hash_table->hash_table_size;i++)
+		for(node = hash_table->heads[i];node != NULL;node = node->next)
+			node->visited = 0;
+}
+
 static void list_connected_component(hash_table_t *hash_table,const char *word)
 {
-	//,
-	// complete this
-	//
+	hash_table_node_t *vertex;
+
+	vertex = find_word(hash_table, word, 0);
+	if (!vertex)
+	{
+		printf("Word not found: %s\n", word);
+		return;
+	}
+
+	adjacency_node_t	*link;
+	ptr_deque_t 		*deque;
+
+	mark_all_vertices(hash_table);
+
+	deque = allocate_ptr_deque(hash_table->hash_table_size);
+	
+	deque_put_hi(deque, vertex);
+	while (deque->size > 0)
+	{
+		vertex = deque_get_hi(deque);
+		for(link = vertex->head; link; link = link->next)
+		{
+			if (!link->vertex->visited)
+			{
+				printf("%s\n", link->vertex->word);
+				link->vertex->visited = 1;
+				deque_put_hi(deque, link->vertex);	
+			}
+		}
+	}
+	free_ptr_deque(deque);
 }
 
 
