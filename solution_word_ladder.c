@@ -97,8 +97,9 @@ struct hash_table_s
 {
 	size_t hash_table_size;            // the size of the hash table array
 	unsigned int number_of_entries;    // the number of entries in the hash table
-	unsigned int number_of_collisions; //
+	unsigned int number_of_collisions; // the total of entries inserted on an occupied index
 	unsigned int number_of_edges;      // number of edges (for information purposes only)
+	unsigned int number_of_components; // number of connected components
 	hash_table_node_t **heads;         // the heads of the linked lists
 };
 
@@ -151,7 +152,7 @@ static void *deque_get_low(ptr_deque_t *deque)
 {
 	assert(deque->size > 0);
 	void *ret = deque->circular_array[deque->lo];
-	deque->lo = deque->lo == 0 ? deque->max_size : deque->lo;
+	deque->lo = (deque->lo + 1) % deque->max_size;
 	deque->size--;
 	return ret;
 }
@@ -160,7 +161,7 @@ static void *deque_get_hi(ptr_deque_t *deque)
 {
 	assert(deque->size > 0);
 	void *ret = deque->circular_array[deque->hi];
-	deque->hi = deque->hi == 0 ? deque->max_size : deque->hi;
+	deque->hi = (deque->hi == 0 ? deque->max_size : deque->hi) - 1;
 	deque->size--;
 	return ret;
 }
@@ -268,10 +269,19 @@ static hash_table_t *hash_table_create(void)
 	hash_table->heads = (hash_table_node_t **)malloc(sizeof(hash_table_node_t) * _hash_table_init_size_);
 	hash_table->hash_table_size = _hash_table_init_size_;
 	hash_table->number_of_entries = 0u;
+	hash_table->number_of_collisions = 0u;
 	hash_table->number_of_edges = 0u;
 	for (i = 0u; i < hash_table->hash_table_size; i++)
 		hash_table->heads[i] = NULL;
 	return hash_table;
+}
+
+static void hash_table_info(hash_table_t *hash_table)
+{
+	printf("Entries: %u\nCollisions: %u\nSize: %lu\n",
+			hash_table->number_of_entries,
+			hash_table->number_of_collisions,
+			hash_table->hash_table_size);
 }
 
 static void hash_table_grow(hash_table_t *hash_table)
@@ -329,10 +339,12 @@ static hash_table_node_t *find_word(hash_table_t *hash_table,const char *word,in
 		node = create_word_node(word);
 		if (hash_table->heads[i])
 		{
+			hash_table->number_of_collisions++;
 			hash_table->heads[i]->previous = node;
-			node->next = hash_table->heads[i];
 		}
+		node->next = hash_table->heads[i];
 		hash_table->heads[i] = node;
+		hash_table->number_of_entries++;
 	}
 	return node;
 }
@@ -370,6 +382,8 @@ static void add_edge(hash_table_t *hash_table,hash_table_node_t *from,const char
 	link->vertex = to;
 	link->next = from->head;
 	from->head = link;
+
+	hash_table->number_of_edges++;
 
 	from_representative = find_representative(from);
 	to_representative = find_representative(to);
@@ -614,7 +628,9 @@ int main(int argc,char **argv)
 		fprintf(stderr,"Your wish is my command:\n");
 		fprintf(stderr,"  1 WORD       (list the connected component WORD belongs to)\n");
 		fprintf(stderr,"  2 FROM TO    (list the shortest path from FROM to TO)\n");
-		fprintf(stderr,"  3            (terminate)\n");
+		fprintf(stderr,"  3            (list hash table info)\n");
+		fprintf(stderr,"  4            (list graph info)\n");
+		fprintf(stderr,"  5            (terminate)\n");
 		fprintf(stderr,"> ");
 		if(scanf("%99s",word) != 1)
 			break;
@@ -634,6 +650,10 @@ int main(int argc,char **argv)
 			path_finder(hash_table,from,to);
 		}
 		else if(command == 3)
+			hash_table_info(hash_table);		
+		else if(command == 3)
+			graph_info(hash_table);
+		else if(command == 4)
 			break;
 	}
 	// clean up
