@@ -651,9 +651,9 @@ int main(int argc,char **argv)
 		}
 		else if(command == 3)
 			hash_table_info(hash_table);		
-		else if(command == 3)
-			graph_info(hash_table);
 		else if(command == 4)
+			graph_info(hash_table);
+		else if(command == 5)
 			break;
 	}
 	// clean up
