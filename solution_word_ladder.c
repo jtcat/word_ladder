@@ -106,6 +106,7 @@ struct hash_table_s
 	unsigned int number_of_entries;    // the number of entries in the hash table
 	unsigned int number_of_collisions; // the total of entries inserted on an occupied index
 	unsigned int number_of_edges;      // number of edges (for information purposes only)
+	unsigned int number_of_edge_nodes; // number of edges (for information purposes only)
 	unsigned int number_of_components; // number of connected components
 	hash_table_node_t **heads;         // the heads of the linked lists
 };
@@ -278,6 +279,7 @@ static hash_table_t *hash_table_create(void)
 	hash_table->number_of_entries = 0u;
 	hash_table->number_of_collisions = 0u;
 	hash_table->number_of_edges = 0u;
+	hash_table->number_of_edge_nodes = 0u;
 	for (i = 0u; i < hash_table->hash_table_size; i++)
 		hash_table->heads[i] = NULL;
 	return hash_table;
@@ -376,22 +378,29 @@ static hash_table_node_t *find_representative(hash_table_node_t *node)
 	return representative;
 }
 
-static void add_edge(hash_table_t *hash_table,hash_table_node_t *from,const char *word)
+static void insert_edge(hash_table_t *hash_table, hash_table_node_t *from, hash_table_node_t *to)
 {
-	hash_table_node_t *to,*from_representative,*to_representative;
 	adjacency_node_t *link;
 
-	to = find_word(hash_table,word,0);
-	if (!to)
-		return;
+	for (link = from->head; link; link = link->next)
+		if (link->vertex == to)
+			return;
 	link = allocate_adjacency_node();
 	link->vertex = to;
 	link->next = from->head;
 	from->head = link;
-	link = allocate_adjacency_node();
-	link->vertex = from;
-	link->next = to->head;
-	to->head = link;
+	hash_table->number_of_edge_nodes++;
+}
+
+static void add_edge(hash_table_t *hash_table,hash_table_node_t *from,const char *word)
+{
+	hash_table_node_t *to,*from_representative,*to_representative;
+
+	to = find_word(hash_table,word,0);
+	if (!to)
+		return;
+	insert_edge(hash_table, from, to);
+	insert_edge(hash_table, to, from);
 	hash_table->number_of_edges++;
 
 	from_representative = find_representative(from);
@@ -523,6 +532,7 @@ static size_t breadh_first_search(size_t maximum_number_of_vertices,hash_table_n
 					for (node = goal; node != origin; node = node->previous)
 						list_of_vertices[list_len++] = node;
 					list_of_vertices[list_len++] = node;
+					free_ptr_deque(deque);
 					return list_len;
 				}
 				link->vertex->visited = 1;
@@ -631,9 +641,10 @@ static void path_finder(hash_table_t *hash_table,const char *from_word,const cha
 
 static void graph_info(hash_table_t *hash_table)
 {
-	//
-	// complete this
-	//
+	// maybe determine number of components
+	printf("Edges: %u\nEdge nodes: %u\n",
+			hash_table->number_of_edges,
+			hash_table->number_of_edge_nodes);
 }
 
 
