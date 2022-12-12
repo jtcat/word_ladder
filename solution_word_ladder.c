@@ -150,12 +150,12 @@ static void free_ptr_deque(ptr_deque_t *deque)
 static void deque_put_hi(ptr_deque_t *deque, void *ptr)
 {
 	assert(deque->size < deque->max_size);
-	deque->hi = (deque->hi + 1) % deque->max_size;
 	deque->circular_array[deque->hi] = ptr;
+	deque->hi = (deque->hi + 1) % deque->max_size;
 	deque->size++;
 }
 
-static void *deque_get_low(ptr_deque_t *deque)
+static void *deque_get_lo(ptr_deque_t *deque)
 {
 	assert(deque->size > 0);
 	void *ret = deque->circular_array[deque->lo];
@@ -514,20 +514,18 @@ static size_t breadh_first_search(size_t maximum_number_of_vertices,hash_table_n
 			if (!link->vertex->visited)
 			{
 				link->vertex->previous = node;
-				list_of_vertices[list_len++] = link->vertex;
-				link->vertex->visited = 1;
-				if (goal && link->vertex == goal)
+				if (!goal)
+					list_of_vertices[list_len++] = link->vertex;
+				else if (link->vertex == goal)
 					break;
+				link->vertex->visited = 1;
 				deque_put_hi(deque, link->vertex);	
 			}
 		}
 	}
 	if (goal && link->vertex == goal)
-	{
-		list_len = 0;
 		for (node = goal; node != origin; node = node->previous)
-			list_len++;
-	}
+			list_of_vertices[list_len++] = node;
 	free_ptr_deque(deque);
 	return list_len;
 }
@@ -596,8 +594,9 @@ static void path_finder(hash_table_t *hash_table,const char *from_word,const cha
 	size_t				list_len;
 	hash_table_node_t	*from, *to;
 
-	from = find_word(hash_table, from_word, 0);
-	to = find_word(hash_table, to_word, 0);
+	// switch from with to in order to print path in correct order
+	to = find_word(hash_table, from_word, 0);
+	from = find_word(hash_table, to_word, 0);
 
 	if (!from)
 	{
