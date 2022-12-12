@@ -340,7 +340,6 @@ static hash_table_node_t *find_word(hash_table_t *hash_table,const char *word,in
 		if (hash_table->heads[i])
 		{
 			hash_table->number_of_collisions++;
-			hash_table->heads[i]->previous = node;
 		}
 		node->next = hash_table->heads[i];
 		hash_table->heads[i] = node;
@@ -382,7 +381,7 @@ static void add_edge(hash_table_t *hash_table,hash_table_node_t *from,const char
 	link->vertex = to;
 	link->next = from->head;
 	from->head = link;
-
+	to->previous = from;
 	hash_table->number_of_edges++;
 
 	from_representative = find_representative(from);
@@ -488,14 +487,40 @@ static void similar_words(hash_table_t *hash_table,hash_table_node_t *from)
 // returns the number of vertices visited; if the last one is goal, following the previous links gives the shortest path between goal and origin
 //
 
-static int breadh_first_search(int maximum_number_of_vertices,hash_table_node_t **list_of_vertices,hash_table_node_t *origin,hash_table_node_t *goal)
-{
-//	for(i = 0u;i < hash_table->hash_table_size;i++)
-//	{
-//		for(node = hash_table->heads[i];node != NULL;node = node->next)
-//			similar_words(hash_table,node);
-//	}
-	return -1;
+static size_t breadh_first_search(size_t maximum_number_of_vertices,hash_table_node_t **list_of_vertices,hash_table_node_t *origin,hash_table_node_t *goal)
+{	
+	size_t				list_len;
+	hash_table_node_t	*node;
+	adjacency_node_t	*link;
+	ptr_deque_t 		*deque;
+
+	list_len = 0;
+	deque = allocate_ptr_deque(maximum_number_of_vertices);
+	
+	deque_put_hi(deque, origin);
+	while (deque->size > 0)
+	{
+		node = deque_get_hi(deque);
+		for(link = node->head; link; link = link->next)
+		{
+			if (goal && link->vertex == goal)
+				break;
+			if (!link->vertex->visited)
+			{
+				list_of_vertices[list_len++] = link->vertex;
+				link->vertex->visited = 1;
+				deque_put_hi(deque, link->vertex);	
+			}
+		}
+	}
+	if (goal && link->vertex == goal)
+	{
+		list_len = 0;
+		for (node = goal; node != origin; node = node->previous)
+			list_len++;
+	}
+	free_ptr_deque(deque);
+	return list_len;
 }
 
 
@@ -514,37 +539,23 @@ static void mark_all_vertices(hash_table_t *hash_table)
 
 static void list_connected_component(hash_table_t *hash_table,const char *word)
 {
-	hash_table_node_t *vertex;
+	hash_table_node_t	*origin;
+	hash_table_node_t	**list;
+	size_t				list_len;
 
-	vertex = find_word(hash_table, word, 0);
-	if (!vertex)
+	origin = find_word(hash_table, word, 0);
+	if (!origin)
 	{
 		printf("Word not found: %s\n", word);
 		return;
 	}
 
-	adjacency_node_t	*link;
-	ptr_deque_t 		*deque;
-
 	mark_all_vertices(hash_table);
-
-	deque = allocate_ptr_deque(hash_table->hash_table_size);
-	
-	deque_put_hi(deque, vertex);
-	while (deque->size > 0)
-	{
-		vertex = deque_get_hi(deque);
-		for(link = vertex->head; link; link = link->next)
-		{
-			if (!link->vertex->visited)
-			{
-				printf("%s\n", link->vertex->word);
-				link->vertex->visited = 1;
-				deque_put_hi(deque, link->vertex);	
-			}
-		}
-	}
-	free_ptr_deque(deque);
+	list = calloc(hash_table->number_of_entries, sizeof(hash_table_node_t *));
+	list_len = breadh_first_search(hash_table->number_of_entries, list, origin, NULL);
+	for (size_t i=0; i < list_len; i++)
+		printf("%s\n", list[i]->word);
+	free(list);
 }
 
 
@@ -572,9 +583,7 @@ static int connected_component_diameter(hash_table_node_t *node)
 
 static void path_finder(hash_table_t *hash_table,const char *from_word,const char *to_word)
 {
-	//
-	// complete this
-	//
+	hash_table_node_t	*from, *to;
 }
 
 
