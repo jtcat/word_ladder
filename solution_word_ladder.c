@@ -9,7 +9,8 @@
 // Do as much as you can
 //   1) MANDATORY: complete the hash table code
 //      *) hash_table_create 		DONE
-//      *) hash_table_grow			WIP
+//      *) hash_table_grow			WORKING	-Requires better resize condition and
+//      									 increment rule.			
 //      *) hash_table_free			DONE
 //      *) find_word				DONE
 //      +) add code to get some statistical data about the hash table
@@ -19,14 +20,14 @@
 //      *) add_edge					DONE
 //
 //   3) RECOMMENDED: implement breadth-first search in the graph
-//      *) breadh_first_search		WIP
+//      *) breadh_first_search		DONE
 //
 //   4) RECOMMENDED: list all words belonginh to a connected component
-//      *) breadh_first_search		WIP
+//      *) breadh_first_search		DONE
 //      *) list_connected_component	DONE
 //
 //   5) RECOMMENDED: find the shortest path between to words
-//      *) breadh_first_search		WIP
+//      *) breadh_first_search		DONE
 //      *) path_finder				DONE
 //      *) test the smallest path from bem to mal
 //         [ 0] bem
@@ -51,6 +52,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <errno.h>
 
 
 //
@@ -58,7 +60,7 @@
 //
 
 #define _max_word_size_  32
-#define _hash_table_init_size_ 3000u
+#define _hash_table_init_size_ 1000
 
 //
 // data structures (SUGGESTION --- you may do it in a different way)
@@ -71,11 +73,11 @@ typedef struct ptr_deque_s 		 ptr_deque_t;
 
 struct ptr_deque_s
 {
-	void 	**circular_array;
-	size_t	hi;
-	size_t	lo;
-	size_t	size;
-	size_t	max_size;
+	void 			**circular_array;
+	unsigned int	hi;
+	unsigned int	lo;
+	unsigned int	size;
+	unsigned int	max_size;
 	int		full;
 };
 
@@ -102,7 +104,7 @@ struct hash_table_node_s
 
 struct hash_table_s
 {
-	size_t hash_table_size;            // the size of the hash table array
+	unsigned int hash_table_size;            // the size of the hash table array
 	unsigned int number_of_entries;    // the number of entries in the hash table
 	unsigned int number_of_collisions; // the total of entries inserted on an occupied index
 	unsigned int number_of_edges;      // number of edges (for information purposes only)
@@ -115,7 +117,7 @@ struct hash_table_s
 // allocation and deallocation of deque
 //
 
-static ptr_deque_t *allocate_ptr_deque(size_t max_size)
+static ptr_deque_t *allocate_ptr_deque(unsigned int max_size)
 {
 	ptr_deque_t	*deque = (ptr_deque_t *)malloc(sizeof(ptr_deque_t));
 	if(deque == NULL)
@@ -274,7 +276,7 @@ static hash_table_t *hash_table_create(void)
 		fprintf(stderr,"create_hash_table: out of memory\n");
 		exit(1);
 	}
-	hash_table->heads = (hash_table_node_t **)malloc(sizeof(hash_table_node_t) * _hash_table_init_size_);
+	hash_table->heads = (hash_table_node_t **)calloc(_hash_table_init_size_ , sizeof(hash_table_node_t *));
 	hash_table->hash_table_size = _hash_table_init_size_;
 	hash_table->number_of_entries = 0u;
 	hash_table->number_of_collisions = 0u;
@@ -287,7 +289,7 @@ static hash_table_t *hash_table_create(void)
 
 static void hash_table_info(hash_table_t *hash_table)
 {
-	printf("Entries: %u\nCollisions: %u\nSize: %lu\n",
+	printf("Entries: %u\nCollisions: %u\nSize: %u\n",
 			hash_table->number_of_entries,
 			hash_table->number_of_collisions,
 			hash_table->hash_table_size);
@@ -295,21 +297,43 @@ static void hash_table_info(hash_table_t *hash_table)
 
 static void hash_table_grow(hash_table_t *hash_table)
 {
-	size_t	size_inc;
-	size_t	new_size;
-
+	unsigned int		size_inc;
+	unsigned int		new_size;
+	unsigned int		new_key;
+	unsigned int		i;
+	hash_table_node_t	**new_table;
+	hash_table_node_t	*next;
+	hash_table_node_t	*node;
 	// Determine size_inc based on collision count
-	size_inc = hash_table->number_of_entries % hash_table->hash_table_size;
-	new_size = hash_table->hash_table_size + size_inc;
-	hash_table->heads = (hash_table_node_t **)realloc(hash_table->heads, new_size);
-	for (size_t i = hash_table->hash_table_size; i < new_size; i++)
-		hash_table->heads[i] = NULL;
-	hash_table->hash_table_size = new_size;
+	if (hash_table->number_of_collisions > 0 && (hash_table->hash_table_size / hash_table->number_of_collisions) < 4)
+	{
+		size_inc = 100;
+		new_size = hash_table->hash_table_size + size_inc;
+		new_table = (hash_table_node_t **)malloc(new_size * sizeof(hash_table_node_t *));
+		if (errno == ENOMEM)
+		{
+			fprintf(stderr,"hash_table_grow: out of memory\n");	
+			exit(1);
+		}
+		for (i=0; i < new_size; i++)
+			new_table[i] = NULL;
+		for (i=0; i < hash_table->hash_table_size; i++)
+			for (node = hash_table->heads[i]; node; node = next)
+			{
+				new_key = crc32(node->word) % new_size;
+				next = node->next;
+				node->next = new_table[new_key];
+				new_table[new_key] = node;
+			}
+		free(hash_table->heads);
+		hash_table->heads = new_table;
+		hash_table->hash_table_size = new_size;
+	}
 }
 
 static void hash_table_free(hash_table_t *hash_table)
 {
-	for (size_t i = 0; i < hash_table->hash_table_size; i++)
+	for (unsigned int i = 0; i < hash_table->hash_table_size; i++)
 		if (hash_table->heads[i])
 			free_hash_llist(hash_table->heads[i]); 
 	free(hash_table->heads);
@@ -335,6 +359,7 @@ static hash_table_node_t *find_word(hash_table_t *hash_table,const char *word,in
 	hash_table_node_t *node;
 	unsigned int i;
 
+	hash_table_grow(hash_table);
 	i = crc32(word) % hash_table->hash_table_size;
 	node = hash_table->heads[i];
 	while (node)
@@ -347,9 +372,7 @@ static hash_table_node_t *find_word(hash_table_t *hash_table,const char *word,in
 	{
 		node = create_word_node(word);
 		if (hash_table->heads[i])
-		{
 			hash_table->number_of_collisions++;
-		}
 		node->next = hash_table->heads[i];
 		hash_table->heads[i] = node;
 		hash_table->number_of_entries++;
@@ -399,9 +422,9 @@ static void add_edge(hash_table_t *hash_table,hash_table_node_t *from,const char
 	to = find_word(hash_table,word,0);
 	if (!to)
 		return;
+	hash_table->number_of_edges++;
 	insert_edge(hash_table, from, to);
 	insert_edge(hash_table, to, from);
-	hash_table->number_of_edges++;
 
 	from_representative = find_representative(from);
 	to_representative = find_representative(to);
@@ -506,9 +529,9 @@ static void similar_words(hash_table_t *hash_table,hash_table_node_t *from)
 // returns the number of vertices visited; if the last one is goal, following the previous links gives the shortest path between goal and origin
 //
 
-static size_t breadh_first_search(size_t maximum_number_of_vertices,hash_table_node_t **list_of_vertices,hash_table_node_t *origin,hash_table_node_t *goal)
+static unsigned int breadh_first_search(unsigned int maximum_number_of_vertices,hash_table_node_t **list_of_vertices,hash_table_node_t *origin,hash_table_node_t *goal)
 {	
-	size_t				list_len;
+	unsigned int		list_len;
 	hash_table_node_t	*node;
 	adjacency_node_t	*link;
 	ptr_deque_t 		*deque;
@@ -553,7 +576,7 @@ static void mark_all_vertices(hash_table_t *hash_table)
 {
 	hash_table_node_t *node;
 
-	for(size_t i = 0u;i < hash_table->hash_table_size;i++)
+	for(unsigned int i = 0;i < hash_table->hash_table_size;i++)
 		for(node = hash_table->heads[i];node != NULL;node = node->next)
 			node->visited = 0;
 }
@@ -562,7 +585,7 @@ static void list_connected_component(hash_table_t *hash_table,const char *word)
 {
 	hash_table_node_t	*origin;
 	hash_table_node_t	**list;
-	size_t				list_len;
+	unsigned int		list_len;
 
 	origin = find_word(hash_table, word, 0);
 	if (!origin)
@@ -574,7 +597,7 @@ static void list_connected_component(hash_table_t *hash_table,const char *word)
 	mark_all_vertices(hash_table);
 	list = calloc(hash_table->number_of_entries, sizeof(hash_table_node_t *));
 	list_len = breadh_first_search(hash_table->number_of_entries, list, origin, NULL);
-	for (size_t i=0; i < list_len; i++)
+	for (unsigned int i=0; i < list_len; i++)
 		printf("%s\n", list[i]->word);
 	free(list);
 }
@@ -605,7 +628,7 @@ static int connected_component_diameter(hash_table_node_t *node)
 static void path_finder(hash_table_t *hash_table,const char *from_word,const char *to_word)
 {
 	hash_table_node_t	**list;
-	size_t				list_len;
+	unsigned int		list_len;
 	hash_table_node_t	*from, *to;
 
 	// switch from with to in order to print path in correct order
@@ -629,8 +652,8 @@ static void path_finder(hash_table_t *hash_table,const char *from_word,const cha
 	if (list_len == 0)
 		printf("Words are not connected\n");
 	else
-		for (size_t i=0; i < list_len; i++)
-			printf("  [%zu] %s\n", i, list[i]->word);
+		for (unsigned int i=0; i < list_len; i++)
+			printf("  [%u] %s\n", i, list[i]->word);
 	free(list);
 }
 
@@ -675,10 +698,8 @@ int main(int argc,char **argv)
 	fclose(fp);
 	// find all similar words
 	for(i = 0u;i < hash_table->hash_table_size;i++)
-	{
 		for(node = hash_table->heads[i];node != NULL;node = node->next)
 			similar_words(hash_table,node);
-	}
 	graph_info(hash_table);
 	// ask what to do
 	for(;;)
