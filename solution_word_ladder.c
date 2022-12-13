@@ -22,7 +22,7 @@
 //   3) RECOMMENDED: implement breadth-first search in the graph
 //      *) breadh_first_search		DONE
 //
-//   4) RECOMMENDED: list all words belonginh to a connected component
+//   4) RECOMMENDED: list all words belonging to a connected component
 //      *) breadh_first_search		DONE
 //      *) list_connected_component	DONE
 //
@@ -52,7 +52,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <errno.h>
 
 
 //
@@ -276,7 +275,7 @@ static hash_table_t *hash_table_create(void)
 		fprintf(stderr,"create_hash_table: out of memory\n");
 		exit(1);
 	}
-	hash_table->heads = (hash_table_node_t **)calloc(_hash_table_init_size_ , sizeof(hash_table_node_t *));
+	hash_table->heads = (hash_table_node_t **)malloc(_hash_table_init_size_ * sizeof(hash_table_node_t *));
 	hash_table->hash_table_size = _hash_table_init_size_;
 	hash_table->number_of_entries = 0u;
 	hash_table->number_of_collisions = 0u;
@@ -305,16 +304,17 @@ static void hash_table_grow(hash_table_t *hash_table)
 	hash_table_node_t	*next;
 	hash_table_node_t	*node;
 	// Determine size_inc based on collision count
-	if (hash_table->number_of_collisions > 0 && (hash_table->hash_table_size / hash_table->number_of_collisions) < 4)
+	if (hash_table->number_of_collisions > 0 && (hash_table->hash_table_size / hash_table->number_of_collisions) < 5)
 	{
-		size_inc = 100;
+		size_inc = hash_table->number_of_collisions;
 		new_size = hash_table->hash_table_size + size_inc;
 		new_table = (hash_table_node_t **)malloc(new_size * sizeof(hash_table_node_t *));
-		if (errno == ENOMEM)
+		if (!new_table)
 		{
 			fprintf(stderr,"hash_table_grow: out of memory\n");	
 			exit(1);
 		}
+		hash_table->number_of_collisions = 0u;
 		for (i=0; i < new_size; i++)
 			new_table[i] = NULL;
 		for (i=0; i < hash_table->hash_table_size; i++)
@@ -323,6 +323,8 @@ static void hash_table_grow(hash_table_t *hash_table)
 				new_key = crc32(node->word) % new_size;
 				next = node->next;
 				node->next = new_table[new_key];
+				if (node->next)
+					hash_table->number_of_collisions++;
 				new_table[new_key] = node;
 			}
 		free(hash_table->heads);
@@ -359,7 +361,6 @@ static hash_table_node_t *find_word(hash_table_t *hash_table,const char *word,in
 	hash_table_node_t *node;
 	unsigned int i;
 
-	hash_table_grow(hash_table);
 	i = crc32(word) % hash_table->hash_table_size;
 	node = hash_table->heads[i];
 	while (node)
@@ -376,6 +377,7 @@ static hash_table_node_t *find_word(hash_table_t *hash_table,const char *word,in
 		node->next = hash_table->heads[i];
 		hash_table->heads[i] = node;
 		hash_table->number_of_entries++;
+		hash_table_grow(hash_table);
 	}
 	return node;
 }
@@ -405,9 +407,6 @@ static void insert_edge(hash_table_t *hash_table, hash_table_node_t *from, hash_
 {
 	adjacency_node_t *link;
 
-	for (link = from->head; link; link = link->next)
-		if (link->vertex == to)
-			return;
 	link = allocate_adjacency_node();
 	link->vertex = to;
 	link->next = from->head;
@@ -595,7 +594,7 @@ static void list_connected_component(hash_table_t *hash_table,const char *word)
 	}
 
 	mark_all_vertices(hash_table);
-	list = calloc(hash_table->number_of_entries, sizeof(hash_table_node_t *));
+	list = malloc(hash_table->number_of_entries * sizeof(hash_table_node_t *));
 	list_len = breadh_first_search(hash_table->number_of_entries, list, origin, NULL);
 	for (unsigned int i=0; i < list_len; i++)
 		printf("%s\n", list[i]->word);
