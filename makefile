@@ -11,7 +11,7 @@ solution_word_ladder:	solution_word_ladder.c
 	cc -g -Wall -Wextra -O2 solution_word_ladder.c -o solution_word_ladder -lm
 
 debug_solution_word_ladder:	solution_word_ladder.c
-	cc -g -Wall -Wextra -O0 solution_word_ladder.c -o solution_word_ladder -lm
+	cc -g -Wall -Wextra -O0 solution_word_ladder.c -o debug_solution_word_ladder -lm
 
 clean:
 	rm -rf a.out word_ladder solution_word_ladder debug_solution_word_ladder
