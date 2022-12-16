@@ -104,6 +104,7 @@ struct hash_table_node_s
 struct hash_table_s
 {
 	unsigned int hash_table_size;            // the size of the hash table array
+	unsigned int largest_component_size;	 //size of the biggest component (passed on to breadh_first as max list size)
 	unsigned int number_of_entries;    // the number of entries in the hash table
 	unsigned int number_of_collisions; // the total of entries inserted on an occupied index
 	unsigned int number_of_edges;      // number of edges (for information purposes only)
@@ -165,16 +166,6 @@ static void *deque_get_lo(ptr_deque_t *deque)
 	deque->size--;
 	return ret;
 }
-
-static void *deque_get_hi(ptr_deque_t *deque)
-{
-	assert(deque->size > 0);
-	void *ret = deque->circular_array[deque->hi];
-	deque->hi = (deque->hi == 0 ? deque->max_size : deque->hi) - 1;
-	deque->size--;
-	return ret;
-}
-
 
 //
 // allocation and deallocation of linked list nodes (done)
@@ -278,6 +269,7 @@ static hash_table_t *hash_table_create(void)
 	hash_table->heads = (hash_table_node_t **)malloc(_hash_table_init_size_ * sizeof(hash_table_node_t *));
 	hash_table->hash_table_size = _hash_table_init_size_;
 	hash_table->number_of_entries = 0u;
+	hash_table->number_of_components = 0u;
 	hash_table->number_of_collisions = 0u;
 	hash_table->number_of_edges = 0u;
 	hash_table->number_of_edge_nodes = 0u;
@@ -376,6 +368,7 @@ static hash_table_node_t *find_word(hash_table_t *hash_table,const char *word,in
 			hash_table->number_of_collisions++;
 		node->next = hash_table->heads[i];
 		hash_table->heads[i] = node;
+		hash_table->number_of_components++;
 		hash_table->number_of_entries++;
 		hash_table_grow(hash_table);
 	}
@@ -417,9 +410,13 @@ static void insert_edge(hash_table_t *hash_table, hash_table_node_t *from, hash_
 static void add_edge(hash_table_t *hash_table,hash_table_node_t *from,const char *word)
 {
 	hash_table_node_t *to,*from_representative,*to_representative;
+	adjacency_node_t *link;
 
 	to = find_word(hash_table,word,0);
 	if (!to)
+		return;
+	for (link = from->head; link && link->vertex != to; link = link->next);
+	if (link)
 		return;
 	hash_table->number_of_edges++;
 	insert_edge(hash_table, from, to);
@@ -432,7 +429,8 @@ static void add_edge(hash_table_t *hash_table,hash_table_node_t *from,const char
 	{
 		from_representative->number_of_vertices += to_representative->number_of_vertices;
 		from_representative->number_of_edges += to_representative->number_of_edges + 1;
-		to->representative = from->representative;
+		to->representative = from_representative;
+		hash_table->number_of_components--;
 	}
 }
 
@@ -535,29 +533,34 @@ static unsigned int breadh_first_search(unsigned int maximum_number_of_vertices,
 	adjacency_node_t	*link;
 	ptr_deque_t 		*deque;
 
-	list_len = 0;
 	deque = allocate_ptr_deque(maximum_number_of_vertices);
-	
+
+	list_len = 0;
 	deque_put_hi(deque, origin);
 	while (deque->size > 0)
 	{
 		node = deque_get_lo(deque);
+		node->visited = 1;
+		if (!goal)
+		{
+			if (list_of_vertices)
+				list_of_vertices[list_len] = node;
+			list_len++;
+		}
+		else if (node == goal)
+		{
+			for (; node != origin; node = node->previous)
+				list_of_vertices[list_len++] = node;
+			list_of_vertices[list_len++] = node;
+			free_ptr_deque(deque);
+			return list_len;
+		}
 		for(link = node->head; link && list_len < maximum_number_of_vertices; link = link->next)
 		{
 			if (!link->vertex->visited)
 			{
-				link->vertex->previous = node;
-				if (!goal)
-					list_of_vertices[list_len++] = link->vertex;
-				else if (link->vertex == goal)
-				{
-					for (node = goal; node != origin; node = node->previous)
-						list_of_vertices[list_len++] = node;
-					list_of_vertices[list_len++] = node;
-					free_ptr_deque(deque);
-					return list_len;
-				}
 				link->vertex->visited = 1;
+				link->vertex->previous = node;
 				deque_put_hi(deque, link->vertex);	
 			}
 		}
@@ -663,10 +666,11 @@ static void path_finder(hash_table_t *hash_table,const char *from_word,const cha
 
 static void graph_info(hash_table_t *hash_table)
 {
-	// maybe determine number of components
-	printf("Edges: %u\nEdge nodes: %u\n",
+	printf("Nodes: %u\nEdges: %u\nEdge nodes: %u\nComponents: %u\n",
+			hash_table->number_of_entries,
 			hash_table->number_of_edges,
-			hash_table->number_of_edge_nodes);
+			hash_table->number_of_edge_nodes,
+			hash_table->number_of_components);
 }
 
 
