@@ -48,6 +48,7 @@
 //   8) OPTIONAL: test for memory leaks
 //
 
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -384,11 +385,9 @@ static hash_table_node_t *find_representative(hash_table_node_t *node)
 {
 	hash_table_node_t *representative,*next_node;
 
-	for(next_node = node; next_node != next_node->representative; next_node = next_node->representative);
-	representative = next_node;
+	for(representative = node; representative != representative->representative; representative = representative->representative);
 
-	// path compression
-	for (next_node = node; next_node != representative; next_node = node)
+	for(next_node = node; next_node != representative; next_node = node)
 	{
 		node = next_node->representative;
 		next_node->representative = representative;
@@ -418,6 +417,9 @@ static void add_edge(hash_table_t *hash_table,hash_table_node_t *from,const char
 	for (link = from->head; link && link->vertex != to; link = link->next);
 	if (link)
 		return;
+	for (link = to->head; link && link->vertex != from; link = link->next);
+	if (link)
+		return;
 	hash_table->number_of_edges++;
 	insert_edge(hash_table, from, to);
 	insert_edge(hash_table, to, from);
@@ -425,11 +427,12 @@ static void add_edge(hash_table_t *hash_table,hash_table_node_t *from,const char
 	from_representative = find_representative(from);
 	to_representative = find_representative(to);
 
+	from_representative->number_of_edges++;
 	if (from_representative != to_representative)
 	{
 		from_representative->number_of_vertices += to_representative->number_of_vertices;
-		from_representative->number_of_edges += to_representative->number_of_edges + 1;
-		to->representative = from_representative;
+		from_representative->number_of_edges += to_representative->number_of_edges;
+		to_representative->representative = from_representative;
 		hash_table->number_of_components--;
 	}
 }
@@ -537,25 +540,16 @@ static unsigned int breadh_first_search(unsigned int maximum_number_of_vertices,
 
 	list_len = 0;
 	deque_put_hi(deque, origin);
-	while (deque->size > 0)
+	while (deque->size > 0 && list_len < maximum_number_of_vertices)
 	{
 		node = deque_get_lo(deque);
 		node->visited = 1;
-		if (!goal)
-		{
-			if (list_of_vertices)
-				list_of_vertices[list_len] = node;
-			list_len++;
-		}
-		else if (node == goal)
-		{
-			for (; node != origin; node = node->previous)
-				list_of_vertices[list_len++] = node;
-			list_of_vertices[list_len++] = node;
-			free_ptr_deque(deque);
-			return list_len;
-		}
-		for(link = node->head; link && list_len < maximum_number_of_vertices; link = link->next)
+		if (list_of_vertices)
+			list_of_vertices[list_len] = node;
+		list_len++;
+		if (node == goal)
+			break;
+		for(link = node->head; link ; link = link->next)
 		{
 			if (!link->vertex->visited)
 			{
@@ -585,20 +579,21 @@ static void mark_all_vertices(hash_table_t *hash_table)
 
 static void list_connected_component(hash_table_t *hash_table,const char *word)
 {
-	hash_table_node_t	*origin;
+	hash_table_node_t	*origin, *rep;
 	hash_table_node_t	**list;
 	unsigned int		list_len;
 
 	origin = find_word(hash_table, word, 0);
 	if (!origin)
 	{
-		printf("Word not found: %s\n", word);
+		printf("\nWord not found: %s\n", word);
 		return;
 	}
 
 	mark_all_vertices(hash_table);
-	list = malloc(hash_table->number_of_entries * sizeof(hash_table_node_t *));
-	list_len = breadh_first_search(hash_table->number_of_entries, list, origin, NULL);
+	rep = find_representative(origin);
+	list = malloc(rep->number_of_vertices * sizeof(hash_table_node_t *));
+	list_len = breadh_first_search(rep->number_of_vertices, list, origin, NULL);
 	for (unsigned int i=0; i < list_len; i++)
 		printf("%s\n", list[i]->word);
 	free(list);
@@ -614,7 +609,7 @@ static hash_table_node_t **largest_diameter_example;
 
 static int connected_component_diameter(hash_table_node_t *node)
 {
-	int diameter;
+	int 				diameter;
 
 	//
 	// complete this
@@ -629,9 +624,8 @@ static int connected_component_diameter(hash_table_node_t *node)
 
 static void path_finder(hash_table_t *hash_table,const char *from_word,const char *to_word)
 {
-	hash_table_node_t	**list;
-	unsigned int		list_len;
 	hash_table_node_t	*from, *to;
+	size_t				i, list_len;
 
 	// switch from with to in order to print path in correct order
 	from = find_word(hash_table, from_word, 0);
@@ -639,26 +633,60 @@ static void path_finder(hash_table_t *hash_table,const char *from_word,const cha
 
 	if (!from)
 	{
-		printf("Word not found: %s\n", from_word);
+		fprintf(stderr, "\nWord not found: %s\n", from_word);
 		return ;
 	}
 	if (!to)
 	{
-		printf("Word not found: %s\n", to_word);
+		fprintf(stderr, "\nWord not found: %s\n", to_word);
 		return ;
 	}
 
 	mark_all_vertices(hash_table);
-	list = calloc(hash_table->number_of_entries, sizeof(hash_table_node_t *));
-	list_len = breadh_first_search(hash_table->number_of_entries, list, to, from);
+	list_len = breadh_first_search(find_representative(to)->number_of_vertices, NULL, to, from);
 	if (list_len == 0)
-		printf("Words are not connected\n");
+		fprintf(stderr, "Words are not connected\n");
 	else
-		for (unsigned int i=0; i < list_len; i++)
-			printf("  [%u] %s\n", i, list[i]->word);
-	free(list);
+	{
+		i = 0;
+		for(; from && from != to; from = from->previous)
+			printf("  [%zu] %s\n", i++, from->word);
+		printf("  [%zu] %s\n", i++, from->word);
+	}
 }
 
+// used after graph has been built to verify that
+// the union-find logic yields correct graph counts
+static unsigned int	verify_component_total(hash_table_t *hash_table)
+{
+	size_t	i, component_n;
+	hash_table_node_t	*iter;
+
+	component_n = 0;
+	mark_all_vertices(hash_table);
+	for (i = 0; i < hash_table->number_of_entries; i++)
+		for(iter = hash_table->heads[i]; iter; iter = iter->next) 
+			if (!iter->visited)
+			{
+				(void)breadh_first_search(hash_table->number_of_entries, NULL, iter, NULL);
+				component_n++;
+			}
+	return component_n;
+}
+
+static void component_info(hash_table_t *hash_table, char *word)
+{
+	hash_table_node_t	*origin, *rep;
+
+	origin = find_word(hash_table, word, 0);
+	if (!origin)
+		return (void)fprintf(stderr, "\nWord not found.\n");
+	rep = find_representative(origin);
+	printf("\nRepresentative: %s\nVertices: %u\nEdges: %u\n",
+			rep->word,
+			rep->number_of_vertices,
+			rep->number_of_edges);
+}
 
 //
 // some graph information (optional)
@@ -666,11 +694,12 @@ static void path_finder(hash_table_t *hash_table,const char *from_word,const cha
 
 static void graph_info(hash_table_t *hash_table)
 {
-	printf("Nodes: %u\nEdges: %u\nEdge nodes: %u\nComponents: %u\n",
+	printf("\nNodes: %u\nEdges: %u\nEdge nodes: %u\nComponents: %u\nComponents (brute): %u\n",
 			hash_table->number_of_entries,
 			hash_table->number_of_edges,
 			hash_table->number_of_edge_nodes,
-			hash_table->number_of_components);
+			hash_table->number_of_components,
+			verify_component_total(hash_table));
 }
 
 
@@ -703,16 +732,16 @@ int main(int argc,char **argv)
 	for(i = 0u;i < hash_table->hash_table_size;i++)
 		for(node = hash_table->heads[i];node != NULL;node = node->next)
 			similar_words(hash_table,node);
-	graph_info(hash_table);
 	// ask what to do
 	for(;;)
 	{
-		fprintf(stderr,"Your wish is my command:\n");
+		fprintf(stderr,"\nYour wish is my command:\n");
 		fprintf(stderr,"  1 WORD       (list the connected component WORD belongs to)\n");
 		fprintf(stderr,"  2 FROM TO    (list the shortest path from FROM to TO)\n");
-		fprintf(stderr,"  3            (list hash table info)\n");
-		fprintf(stderr,"  4            (list graph info)\n");
-		fprintf(stderr,"  5            (terminate)\n");
+		fprintf(stderr,"  3 WORD       (list component info)\n");
+		fprintf(stderr,"  4            (list hash table info)\n");
+		fprintf(stderr,"  5            (list graph info)\n");
+		fprintf(stderr,"  0            (terminate)\n");
 		fprintf(stderr,"> ");
 		if(scanf("%99s",word) != 1)
 			break;
@@ -732,10 +761,16 @@ int main(int argc,char **argv)
 			path_finder(hash_table,from,to);
 		}
 		else if(command == 3)
-			hash_table_info(hash_table);		
+		{
+			if(scanf("%99s",word) != 1)
+				break;
+			component_info(hash_table, word);
+		}
 		else if(command == 4)
-			graph_info(hash_table);
+			hash_table_info(hash_table);		
 		else if(command == 5)
+			graph_info(hash_table);
+		else if(command == 0)
 			break;
 	}
 	// clean up
