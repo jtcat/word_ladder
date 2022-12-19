@@ -289,7 +289,6 @@ static void hash_table_info(hash_table_t *hash_table)
 
 static void hash_table_grow(hash_table_t *hash_table)
 {
-	unsigned int		size_inc;
 	unsigned int		new_size;
 	unsigned int		new_key;
 	unsigned int		i;
@@ -299,8 +298,7 @@ static void hash_table_grow(hash_table_t *hash_table)
 	// Determine size_inc based on collision count
 	if (hash_table->number_of_collisions > 0 && (hash_table->hash_table_size / hash_table->number_of_collisions) < 5)
 	{
-		size_inc = hash_table->number_of_collisions;
-		new_size = hash_table->hash_table_size + size_inc;
+		new_size = hash_table->hash_table_size * 2;
 		new_table = (hash_table_node_t **)malloc(new_size * sizeof(hash_table_node_t *));
 		if (!new_table)
 		{
@@ -430,9 +428,13 @@ static void add_edge(hash_table_t *hash_table,hash_table_node_t *from,const char
 	from_representative->number_of_edges++;
 	if (from_representative != to_representative)
 	{
-		from_representative->number_of_vertices += to_representative->number_of_vertices;
-		from_representative->number_of_edges += to_representative->number_of_edges;
-		to_representative->representative = from_representative;
+		unsigned int	vert_sum = from_representative->number_of_vertices + to_representative->number_of_vertices;	
+		unsigned int	edge_sum = from_representative->number_of_edges + to_representative->number_of_edges;
+		int					cond = to_representative->number_of_vertices > from_representative->number_of_vertices;
+		hash_table_node_t	*new_rep = cond ? from_representative : to_representative;
+		new_rep->number_of_vertices = vert_sum;
+		new_rep->number_of_edges = edge_sum;
+		(cond ? to_representative : from_representative)->representative = new_rep;
 		hash_table->number_of_components--;
 	}
 }
@@ -664,7 +666,7 @@ static unsigned int	verify_component_total(hash_table_t *hash_table)
 
 	component_n = 0;
 	mark_all_vertices(hash_table);
-	for (i = 0; i < hash_table->number_of_entries; i++)
+	for (i = 0; i < hash_table->hash_table_size; i++)
 		for(iter = hash_table->heads[i]; iter; iter = iter->next) 
 			if (!iter->visited)
 			{
