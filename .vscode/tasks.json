@@ -1,0 +1,40 @@
+{
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "Build using makefile",
+            "command": "make",
+            "args": [
+                "solution_word_ladder"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Task by Rúben Garrido"
+        },
+        {
+            "type": "shell",
+            "label": "Build debug using makefile",
+            "command": "make",
+            "args": [
+                "debug_solution_word_ladder"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": "build",
+            "detail": "Task by Rúben Garrido"
+        }
+    ],
+    "version": "2.0.0"
+}
