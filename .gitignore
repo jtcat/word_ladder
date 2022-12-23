@@ -1,2 +1,4 @@
 solution_word_ladder
 debug_solution_word_ladder
+.cache
+compile_commands.json
