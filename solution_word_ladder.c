@@ -293,36 +293,33 @@ static void hash_table_grow(hash_table_t *hash_table)
 	unsigned int		test_new_size;
 	unsigned int		test_new_key;
 	double				j;
-	hash_table_node_t	**test_new_table;
+	hash_table_node_t	**test_new_table = (hash_table_node_t **)calloc(1000u, sizeof(hash_table_node_t *));
 	unsigned int		colnum;
 
 	// Determine size_inc based on collision count
 	if (hash_table->number_of_collisions > 0 && (hash_table->hash_table_size / hash_table->number_of_collisions) < 5)
 	{
 		// Find the best j
-		printf("\n j  | new size | memory | coll. num\n");
+		printf("\nFinding best j. Current hash_table_size is %u.\n", hash_table->hash_table_size);
+		printf(" j  | new size | memory | coll. num\n");
 		for (j = 1.1; j < 3; j += 0.1)
 		{
 			colnum = 0u;
 			test_new_size = (double)hash_table->hash_table_size * j;
+
+			if (test_new_table)
+				free(test_new_table);
 			test_new_table = (hash_table_node_t **)calloc(test_new_size, sizeof(hash_table_node_t *));
+
 			for (i=0; i < hash_table->hash_table_size; i++)
 			{
-				printf("i: %u\n", i);
 				for (node = hash_table->heads[i]; node; node = next)
 				{
-					printf("word in original table: %s\n", node->word);
 					test_new_key = crc32(node->word) % test_new_size;
-					// The following may be causing the overflow problem.
-					// My take is that the node->next overwrites the original values.
-					// Then, when the "j" for loop continues, it iterates over the new values, instead of the original ones.
-					// I have to fix this.
 					next = node->next;
-					node->next = test_new_table[test_new_key];
-					if (node->next)
+					if (test_new_table[test_new_key])
 					{
 						colnum++;
-						printf("new colnum: %u\n", colnum);
 					}
 					test_new_table[test_new_key] = node;
 				}
@@ -348,6 +345,7 @@ static void hash_table_grow(hash_table_t *hash_table)
 					hash_table->number_of_collisions++;
 				new_table[new_key] = node;
 			}
+		printf("New number of collisions, with increment 2: %u\n", hash_table->number_of_collisions);
 		free(hash_table->heads);
 		hash_table->heads = new_table;
 		hash_table->hash_table_size = new_size;
