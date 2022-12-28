@@ -293,7 +293,7 @@ static void hash_table_grow(hash_table_t *hash_table)
 	unsigned int		test_new_size;
 	unsigned int		test_new_key;
 	double				j;
-	hash_table_node_t	**test_new_table = (hash_table_node_t **)calloc(1000u, sizeof(hash_table_node_t *));
+	hash_table_node_t	**test_new_table;
 	unsigned int		colnum;
 
 	// Determine size_inc based on collision count
@@ -306,9 +306,6 @@ static void hash_table_grow(hash_table_t *hash_table)
 		{
 			colnum = 0u;
 			test_new_size = (double)hash_table->hash_table_size * j;
-
-			if (test_new_table)
-				free(test_new_table);
 			test_new_table = (hash_table_node_t **)calloc(test_new_size, sizeof(hash_table_node_t *));
 
 			for (i=0; i < hash_table->hash_table_size; i++)
