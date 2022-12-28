@@ -2,7 +2,7 @@
     "tasks": [
         {
             "type": "shell",
-            "label": "Build using makefile",
+            "label": "Build solution_word_ladder using makefile",
             "command": "make",
             "args": [
                 "solution_word_ladder"
@@ -21,13 +21,45 @@
         },
         {
             "type": "shell",
-            "label": "Build debug using makefile",
+            "label": "Build debug_solution_word_ladder using makefile",
             "command": "make",
             "args": [
                 "debug_solution_word_ladder"
             ],
             "options": {
                 "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": "build",
+            "detail": "Task by Rúben Garrido"
+        },
+        {
+            "type": "shell",
+            "label": "Build hash_table_grow_test using makefile",
+            "command": "make",
+            "args": [
+                "hash_table_grow_test"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": "build",
+            "detail": "Task by Rúben Garrido"
+        },
+        {
+            "type": "shell",
+            "label": "Build debug_hash_table_grow_test using makefile",
+            "command": "make",
+            "args": [
+                "debug_hash_table_grow_test"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
             },
             "problemMatcher": [
                 "$gcc"

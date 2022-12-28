@@ -25,7 +25,34 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "Build debug using makefile"
+            "preLaunchTask": "Build debug_solution_word_ladder using makefile"
+        },
+        {
+            "name": "Debug debug_hash_table_grow_test",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/hash_table_grow-test/debug_hash_table_grow_test",
+            "args": [
+                "wordlist-four-letters.txt"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "Build debug_hash_table_grow_test using makefile"
         }
     ],
     "version": "2.0.0"
