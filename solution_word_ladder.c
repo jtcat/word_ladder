@@ -289,41 +289,9 @@ static void hash_table_grow(hash_table_t *hash_table)
 	hash_table_node_t	**new_table;
 	hash_table_node_t	*next;
 	hash_table_node_t	*node;
-
-	unsigned int		test_new_size;
-	unsigned int		test_new_key;
-	double				j;
-	hash_table_node_t	**test_new_table;
-	unsigned int		colnum;
-
 	// Determine size_inc based on collision count
 	if (hash_table->number_of_collisions > 0 && (hash_table->hash_table_size / hash_table->number_of_collisions) < 5)
 	{
-		// Find the best j
-		printf("\nFinding best j. Current hash_table_size is %u.\n", hash_table->hash_table_size);
-		printf(" j   | new size | memory | colnum\n");
-		for (j = 1.1; j < 3; j += 0.05)
-		{
-			colnum = 0u;
-			test_new_size = (double)hash_table->hash_table_size * j;
-			test_new_table = (hash_table_node_t **)calloc(test_new_size, sizeof(hash_table_node_t *));
-
-			for (i=0; i < hash_table->hash_table_size; i++)
-			{
-				for (node = hash_table->heads[i]; node; node = next)
-				{
-					test_new_key = crc32(node->word) % test_new_size;
-					next = node->next;
-					if (test_new_table[test_new_key])
-					{
-						colnum++;
-					}
-					test_new_table[test_new_key] = node;
-				}
-			}
-			printf("%3.2f | %8u | %6lu | %6u\n", j, test_new_size, test_new_size * sizeof(hash_table_node_t *), colnum);
-		}
-
 		new_size = hash_table->hash_table_size * 2;
 		new_table = (hash_table_node_t **)calloc(new_size, sizeof(hash_table_node_t *));
 		if (!new_table)
@@ -342,7 +310,6 @@ static void hash_table_grow(hash_table_t *hash_table)
 					hash_table->number_of_collisions++;
 				new_table[new_key] = node;
 			}
-		printf("New number of collisions, with increment 2: %u\n", hash_table->number_of_collisions);
 		free(hash_table->heads);
 		hash_table->heads = new_table;
 		hash_table->hash_table_size = new_size;
@@ -769,7 +736,6 @@ int main(int argc,char **argv)
 	// initialize hash table
 	hash_table = hash_table_create();
 	// read words
-	printf("Reading words from %s\n",(argc < 2) ? "wordlist-big-latest.txt" : argv[1]);
 	fp = fopen((argc < 2) ? "wordlist-big-latest.txt" : argv[1],"rb");
 	if(fp == NULL)
 	{
@@ -792,51 +758,51 @@ int main(int argc,char **argv)
 				rep->component_diameter = connected_component_diameter(node);
 			}
 		}
-	// printf("Largest diameter: %d, from component: %s\n", largest_diameter, find_representative(largest_diameter_example[0])->word);
-	// printf("Largest word chain:\n");
-	// for(i=0; i < (unsigned int)largest_diameter; i++)
-	// 	printf("	[%d] %s\n", i, largest_diameter_example[i]->word);
+	printf("Largest diameter: %d, from component: %s\n", largest_diameter, find_representative(largest_diameter_example[0])->word);
+	printf("Largest word chain:\n");
+	for(i=0; i < (unsigned int)largest_diameter; i++)
+		printf("	[%d] %s\n", i, largest_diameter_example[i]->word);
 	// ask what to do
-	// for(;;)
-	// {
-	// 	fprintf(stderr,"\nYour wish is my command:\n");
-	// 	fprintf(stderr,"  1 WORD       (list the connected component WORD belongs to)\n");
-	// 	fprintf(stderr,"  2 FROM TO    (list the shortest path from FROM to TO)\n");
-	// 	fprintf(stderr,"  3 WORD       (list component info)\n");
-	// 	fprintf(stderr,"  4            (list hash table info)\n");
-	// 	fprintf(stderr,"  5            (list graph info)\n");
-	// 	fprintf(stderr,"  0            (terminate)\n");
-	// 	fprintf(stderr,"> ");
-	// 	if(scanf("%99s",word) != 1)
-	// 		break;
-	// 	command = atoi(word);
-	// 	if(command == 1)
-	// 	{
-	// 		if(scanf("%99s",word) != 1)
-	// 			break;
-	// 		list_connected_component(hash_table,word);
-	// 	}
-	// 	else if(command == 2)
-	// 	{
-	// 		if(scanf("%99s",from) != 1)
-	// 			break;
-	// 		if(scanf("%99s",to) != 1)
-	// 			break;
-	// 		path_finder(hash_table,from,to);
-	// 	}
-	// 	else if(command == 3)
-	// 	{
-	// 		if(scanf("%99s",word) != 1)
-	// 			break;
-	// 		component_info(hash_table, word);
-	// 	}
-	// 	else if(command == 4)
-	// 		hash_table_info(hash_table);		
-	// 	else if(command == 5)
-	// 		graph_info(hash_table);
-	// 	else if(command == 0)
-	// 		break;
-	// }
+	for(;;)
+	{
+		fprintf(stderr,"\nYour wish is my command:\n");
+		fprintf(stderr,"  1 WORD       (list the connected component WORD belongs to)\n");
+		fprintf(stderr,"  2 FROM TO    (list the shortest path from FROM to TO)\n");
+		fprintf(stderr,"  3 WORD       (list component info)\n");
+		fprintf(stderr,"  4            (list hash table info)\n");
+		fprintf(stderr,"  5            (list graph info)\n");
+		fprintf(stderr,"  0            (terminate)\n");
+		fprintf(stderr,"> ");
+		if(scanf("%99s",word) != 1)
+			break;
+		command = atoi(word);
+		if(command == 1)
+		{
+			if(scanf("%99s",word) != 1)
+				break;
+			list_connected_component(hash_table,word);
+		}
+		else if(command == 2)
+		{
+			if(scanf("%99s",from) != 1)
+				break;
+			if(scanf("%99s",to) != 1)
+				break;
+			path_finder(hash_table,from,to);
+		}
+		else if(command == 3)
+		{
+			if(scanf("%99s",word) != 1)
+				break;
+			component_info(hash_table, word);
+		}
+		else if(command == 4)
+			hash_table_info(hash_table);		
+		else if(command == 5)
+			graph_info(hash_table);
+		else if(command == 0)
+			break;
+	}
 	// clean up
 	hash_table_free(hash_table);
 	if (largest_diameter_example)
