@@ -167,7 +167,11 @@ static void hash_table_grow(hash_table_t *hash_table)
 			printf("%3.2f | %8u | %6lu | %6u\n", j, test_new_size, test_new_size * sizeof(hash_table_node_t *), colnum);
 		}
 
-		new_size = hash_table->hash_table_size * 2;
+		char chosen_j_char[10];
+		printf("Choose j: ");
+		scanf("%99s", chosen_j_char);
+
+		new_size = hash_table->hash_table_size * atof(chosen_j_char);
 		new_table = (hash_table_node_t **)calloc(new_size, sizeof(hash_table_node_t *));
 		if (!new_table)
 		{
