@@ -1,7 +1,7 @@
 {
     "configurations": [
         {
-            "name": "Debug debug_solution_work_ladder",
+            "name": "Debug solution_work_ladder",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/debug_solution_word_ladder",
@@ -28,7 +28,7 @@
             "preLaunchTask": "Build debug_solution_word_ladder using makefile"
         },
         {
-            "name": "Debug debug_hash_table_grow_test",
+            "name": "Debug hash_table_grow_test",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/hash_table_grow-test/debug_hash_table_grow_test",
