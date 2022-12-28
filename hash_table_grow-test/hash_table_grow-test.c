@@ -3,49 +3,7 @@
 //
 // Second practical assignement (speed run)
 //
-// Place your student numbers and names here
-//   N.Mec. 93096  Name: João Catarino
-//
-// Do as much as you can
-//   1) MANDATORY: complete the hash table code
-//      *) hash_table_create 		DONE
-//      *) hash_table_grow			WORKING	-Requires better resize condition and
-//      									 increment rule.			
-//      *) hash_table_free			DONE
-//      *) find_word				DONE
-//      +) add code to get some statistical data about the hash table
-//
-//   2) HIGHLY RECOMMENDED: build the graph (including union-find data) -- use the similar_words function...
-//      *) find_representative		DONE
-//      *) add_edge					DONE
-//
-//   3) RECOMMENDED: implement breadth-first search in the graph
-//      *) breadh_first_search		DONE
-//
-//   4) RECOMMENDED: list all words belonging to a connected component
-//      *) breadh_first_search		DONE
-//      *) list_connected_component	DONE
-//
-//   5) RECOMMENDED: find the shortest path between to words
-//      *) breadh_first_search		DONE
-//      *) path_finder				DONE
-//      *) test the smallest path from bem to mal
-//         [ 0] bem
-//         [ 1] tem
-//         [ 2] teu
-//         [ 3] meu
-//         [ 4] mau
-//         [ 5] mal
-//      *) find other interesting word ladders
-//
-//   6) OPTIONAL: compute the diameter of a connected component and list the longest word chain
-//      *) breadh_first_search
-//      *) connected_component_diameter
-//
-//   7) OPTIONAL: print some statistics about the graph
-//      *) graph_info
-//
-//   8) OPTIONAL: test for memory leaks
+// Test program for the hash_table_grow function.
 //
 
 #include <stddef.h>
@@ -67,26 +25,8 @@
 // data structures (SUGGESTION --- you may do it in a different way)
 //
 
-typedef struct adjacency_node_s  adjacency_node_t;
 typedef struct hash_table_node_s hash_table_node_t;
 typedef struct hash_table_s      hash_table_t;
-typedef struct ptr_deque_s 		 ptr_deque_t;
-
-struct ptr_deque_s
-{
-	void 			**circular_array;
-	unsigned int	hi;
-	unsigned int	lo;
-	unsigned int	size;
-	unsigned int	max_size;
-	int		full;
-};
-
-struct adjacency_node_s
-{
-	adjacency_node_t *next;            // link to th enext adjacency list node
-	hash_table_node_t *vertex;         // the other vertex
-};
 
 struct hash_table_node_s
 {
@@ -94,7 +34,6 @@ struct hash_table_node_s
 	char word[_max_word_size_];        // the word
 	hash_table_node_t *next;           // next hash table linked list node
 									   // the vertex data
-	adjacency_node_t *head;            // head of the linked list of adjancency edges
 	int visited;                       // visited status (while not in use, keep it at 0)
 	hash_table_node_t *previous;       // breadth-first search parent
 									   // the union find data
@@ -120,27 +59,6 @@ struct hash_table_s
 // allocation and deallocation of linked list nodes (done)
 //
 
-static void free_adjacency_node(adjacency_node_t *node)
-{
-	free(node);
-}
-
-static void free_adjacency_llist(adjacency_node_t *head)
-{
-	adjacency_node_t *next;
-	for (; head; head = next)
-	{
-		next = head->next;
-		free_adjacency_node(head);
-	}
-}
-
-static void free_hash_table_node(hash_table_node_t *node)
-{
-	free_adjacency_llist(node->head);
-	free(node);
-}
-
 static hash_table_node_t *allocate_hash_table_node(void)
 {
 	hash_table_node_t *node;
@@ -160,7 +78,7 @@ static void free_hash_llist(hash_table_node_t *head)
 	for (; head; head = next)
 	{
 		next = head->next;
-		free_hash_table_node(head);
+		free(head);
 	}
 }
 
@@ -292,7 +210,6 @@ static hash_table_node_t *create_word_node(const char *word)
 	node->number_of_edges = 0;
 	node->previous = NULL;
 	node->next = NULL;
-	node->head = NULL;
 	strcpy(node->word, word);
 	return node;
 }
