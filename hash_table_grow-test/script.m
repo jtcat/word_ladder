@@ -32,6 +32,7 @@ title('Número de colisões em função da memória livre')
 xlabel('Memória livre (bytes)')
 ylabel('Número de colisões')
 grid on
+xlim([5000 20000])
 
 figure(3)
 plot(j,ratio_col_mem)
