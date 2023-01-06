@@ -144,8 +144,8 @@ static void hash_table_grow(hash_table_t *hash_table)
 	{
 		// Find the best j
 		printf("\nFinding best j. Current hash_table_size is %u.\n", hash_table->hash_table_size);
-		printf(" j   | new size | memory | colnum\n");
-		for (j = 1.1; j < 3; j += 0.05)
+		printf("  j   | new size | memory | colnum\n");
+		for (j = 1.1; j < 3; j += 0.005)
 		{
 			colnum = 0u;
 			test_new_size = (double)hash_table->hash_table_size * j;
@@ -164,7 +164,7 @@ static void hash_table_grow(hash_table_t *hash_table)
 					test_new_table[test_new_key] = node;
 				}
 			}
-			printf("%3.2f | %8u | %6lu | %6u\n", j, test_new_size, test_new_size * sizeof(hash_table_node_t *), colnum);
+			printf("%3.3f | %8u | %6lu | %6u\n", j, test_new_size, test_new_size * sizeof(hash_table_node_t *), colnum);
 		}
 
 		char chosen_j_char[10];
