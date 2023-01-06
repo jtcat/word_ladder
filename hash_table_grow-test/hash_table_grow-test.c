@@ -138,16 +138,19 @@ static void hash_table_grow(hash_table_t *hash_table)
 	double				j;
 	hash_table_node_t	**test_new_table;
 	unsigned int		colnum;
+	unsigned int		free_entries;
+	unsigned int		k;
 
 	// Determine size_inc based on collision count
 	if (hash_table->number_of_collisions > 0 && (hash_table->hash_table_size / hash_table->number_of_collisions) < 5)
 	{
 		// Find the best j
 		printf("\nFinding best j. Current hash_table_size is %u.\n", hash_table->hash_table_size);
-		printf("  j   | new size | memory | colnum\n");
+		printf("  j   | new size | memory | free m | colnum\n");
 		for (j = 1.1; j < 3; j += 0.005)
 		{
 			colnum = 0u;
+			free_entries = 0u;
 			test_new_size = (double)hash_table->hash_table_size * j;
 			test_new_table = (hash_table_node_t **)calloc(test_new_size, sizeof(hash_table_node_t *));
 
@@ -164,14 +167,15 @@ static void hash_table_grow(hash_table_t *hash_table)
 					test_new_table[test_new_key] = node;
 				}
 			}
-			printf("%3.3f | %8u | %6lu | %6u\n", j, test_new_size, test_new_size * sizeof(hash_table_node_t *), colnum);
+			for (k=0; k < test_new_size; k++) {
+				if (!test_new_table[k]) {
+					free_entries++;
+				}
+			}
+			printf("%3.3f | %8u | %6lu | %6lu | %6u\n", j, test_new_size, test_new_size * sizeof(hash_table_node_t *), free_entries * sizeof(hash_table_node_t *), colnum);
 		}
 
-		char chosen_j_char[10];
-		printf("Choose j: ");
-		scanf("%99s", chosen_j_char);
-
-		new_size = hash_table->hash_table_size * atof(chosen_j_char);
+		new_size = hash_table->hash_table_size * 2;
 		new_table = (hash_table_node_t **)calloc(new_size, sizeof(hash_table_node_t *));
 		if (!new_table)
 		{
