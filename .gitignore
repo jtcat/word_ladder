@@ -2,3 +2,8 @@ solution_word_ladder
 debug_solution_word_ladder
 .cache
 compile_commands.json
+hash_table_grow-test/debug_hash_table_grow_test
+hash_table_grow-test/hash_table_grow_test
+
+# MATLAB files
+*.asv

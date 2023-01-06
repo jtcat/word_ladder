@@ -2,13 +2,13 @@
     "tasks": [
         {
             "type": "shell",
-            "label": "Build using makefile",
+            "label": "Build solution_word_ladder using makefile",
             "command": "make",
             "args": [
                 "solution_word_ladder"
             ],
             "options": {
-                "cwd": "${fileDirname}"
+                "cwd": "${workspaceFolder}"
             },
             "problemMatcher": [
                 "$gcc"
@@ -17,23 +17,55 @@
                 "kind": "build",
                 "isDefault": true
             },
-            "detail": "Task by Rúben Garrido"
+            "detail": "Build solution_word_ladder for production."
         },
         {
             "type": "shell",
-            "label": "Build debug using makefile",
+            "label": "Build debug_solution_word_ladder using makefile",
             "command": "make",
             "args": [
                 "debug_solution_word_ladder"
             ],
             "options": {
-                "cwd": "${fileDirname}"
+                "cwd": "${workspaceFolder}"
             },
             "problemMatcher": [
                 "$gcc"
             ],
             "group": "build",
-            "detail": "Task by Rúben Garrido"
+            "detail": "Build solution_word_ladder, with debug symbols, for testing."
+        },
+        {
+            "type": "shell",
+            "label": "Build hash_table_grow_test using makefile",
+            "command": "make",
+            "args": [
+                "hash_table_grow_test"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": "build",
+            "detail": "Build hash_table_grow_test for production."
+        },
+        {
+            "type": "shell",
+            "label": "Build debug_hash_table_grow_test using makefile",
+            "command": "make",
+            "args": [
+                "debug_hash_table_grow_test"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": "build",
+            "detail": "Build hash_table_grow_test, with debug symbols, for testing."
         }
     ],
     "version": "2.0.0"
