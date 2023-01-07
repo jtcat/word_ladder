@@ -102,7 +102,23 @@ Por padrão, o tamanho inicial da \foreign{hash table} é 1000. No entanto, quan
 Contudo, a escolha do fator de incremento deve ser ponderada, já que, se for muito pequeno, o número de colisões diminui pouco, e se for muito grande, existe demasiada memória alocada não utilizada, o que leva a um desperdício de recursos. É esta escolha que pretendemos analisar.
 
 \subsection{Explicação do código}
-Texto aqui
+Foi desenvolvida uma nova função \lstinline|hash_table_grow|, num programa à parte, onde, após ser verificada a condição de incremento (rácio entre o tamanho da \foreign{hash table} e o número de colisões), é percorrido um ciclo \lstinline|for|, onde são testados vários valores de \lstinline|j| (fator de incremento).
+
+\lstinputlisting[firstline=17, lastline=22]{\hashtablegrowdir/latex-hash\_table\_grow-test.c}
+
+Dentro deste ciclo, e após definir inicializar algumas variáveis (p.e., a nova \foreign{hash table} temporária), surgem dois novos ciclos \lstinline|for|.
+
+No primeiro \lstinline|for|, é percorrida a \foreign{hash table} inicial, onde, para cada \lstinline|node|, é calculado o novo índice, através do resto da divisão entre o valor retornado da função \lstinline|crc32| e o tamanho da \foreign{hash table}. Após este cálculo, é verificada a existência de colisões no índice calculado anteriormente, e, caso existam, é incrementado o valor de \lstinline|colnum|. Por fim, é associado o nó atual à nova \foreign{hash table}, na localização definida pelo índice.
+
+\lstinputlisting[firstline=28, lastline=40]{\hashtablegrowdir/latex-hash\_table\_grow-test.c}
+
+No segundo \lstinline|for|, é percorrida a nova \foreign{hash table}, onde é verificado o número de entradas livres desta. Caso \lstinline|test_new_table[k]| seja nulo, significa que a posição \lstinline|k| da \foreign{hash table} está livre, e, portanto, é incrementado o valor de \lstinline|free_entries|.
+
+\lstinputlisting[firstline=41, lastline=45]{\hashtablegrowdir/latex-hash\_table\_grow-test.c}
+
+Por fim, é impressa uma linha com os dados obtidos, nomeadamente o fator de incremento \lstinline|j|, o novo tamanho da \foreign{hash table} \lstinline|test_new_size|, a memória total ocupada \lstinline|test_new_size * sizeof(hash_table_node_t *)|, a memória ocupada por entradas livres \lstinline|free_entries * sizeof(hash_table_node_t *)| e o número de colisões \lstinline|colnum|.
+
+\lstinputlisting[firstline=46, lastline=46]{\hashtablegrowdir/latex-hash\_table\_grow-test.c}
 
 \subsection{Gráficos obtidos}
 Através do MATLAB, foi possível obter um conjunto de gráficos, que relacionam colisões com memória livre e memória total. O script, disponível na secção \ref{MATLABcode}, obtém os dados através de um ficheiro de texto, que contém a tabela imprimida pelo programa de teste.
