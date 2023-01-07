@@ -95,11 +95,64 @@
 \section{Introdução}
 Texto aqui
 
+\section{Análise do incremento da \foreign{hash table}}
+\subsection{Explicação do código}
+Texto aqui
+
+\subsection{Gráficos obtidos}
+Através do MATLAB, foi possível obter um conjunto de gráficos, que relacionam colisões com memória livre e memória total. O script, disponível na secção \ref{MATLABcode}, obtém os dados através de um ficheiro de texto, que contém a tabela imprimida pelo programa de teste.
+
+Os gráficos em questão incidem sobre o primeiro incremento, onde o tamanho atual da \foreign{hash table} é 1000.
+
+\begin{figure}[h]
+	\begin{subfigure}{0.47\textwidth}
+		\includegraphics[width=\linewidth]{\hashtablegrowdir/plots/figure1.png} 
+		\caption{Número de colisões em função da memória total.}
+		\label{fig:htg_col_mem_total}
+	\end{subfigure}
+	\hspace{0.049\textwidth}
+	\begin{subfigure}{0.47\textwidth}
+		\includegraphics[width=0.96\linewidth]{\hashtablegrowdir/plots/figure2.png}
+		\caption{Número de colisões em função da memória livre.}
+		\label{fig:htg_col_mem_free}
+	\end{subfigure}
+	
+	\caption{Número de colisões em função da memória.}
+	\label{fig:htg_col_mem}
+\end{figure}
+
+\begin{figure}[h]
+	\begin{subfigure}{0.47\textwidth}
+		\includegraphics[width=\linewidth]{\hashtablegrowdir/plots/figure3.png} 
+		\caption{Rácio colisões/memória total.}
+		\label{fig:htg_ratio_inc_total}
+	\end{subfigure}
+	\hspace{0.049\textwidth}
+	\begin{subfigure}{0.47\textwidth}
+		\includegraphics[width=0.96\linewidth]{\hashtablegrowdir/plots/figure4.png}
+		\caption{Rácio colisões/memória livre.}
+		\label{fig:htg_ratio_inc_free}
+	\end{subfigure}
+	
+	\caption{Rácio colisões/memória em função do incremento.}
+	\label{fig:htg_ratio_inc}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.5\linewidth]{\hashtablegrowdir/plots/figure5.png}
+	\caption{Memória livre em função da memória total.}
+	\label{fig:htg_free_total}
+\end{figure}
+
+\subsection{Análise dos resultados}
+Texto
+
 \pagebreak
 \section{Código}
 \subsection{Função hash\_table\_grow que testa o melhor incremento}
 \lstinputlisting[firstline=4]{\hashtablegrowdir/latex-hash\_table\_grow-test.c}
 \pagebreak
-\subsection{Script MATLAB que gera os gráficos para análise da hash\_table\_grow}
+\subsection{Script MATLAB que gera os gráficos para análise da hash\_table\_grow} \label{MATLABcode}
 \lstinputlisting[style=Matlab-editor, numbers=none, basicstyle=\small\ttfamily, firstline=5]{\hashtablegrowdir/script.m}
 \end{document}
