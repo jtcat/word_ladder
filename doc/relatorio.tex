@@ -4,7 +4,6 @@
 \usepackage{fancyhdr}
 \usepackage[portuguese]{babel}
 \usepackage{blindtext}
-\usepackage[table]{xcolor}
 \usepackage{listings}
 \usepackage[T1]{fontenc}
 \usepackage[margin=2.5cm]{geometry}
@@ -26,12 +25,12 @@
 \setlength{\headheight}{14.2pt}
 \fancypagestyle{fancy}{
 	\fancyhf{}
-	\fancyhead[C]{A02 - word\_ladder}
+	\fancyhead[C]{A02 -- word\_ladder}
 	\fancyfoot[R]{
 		\textsf{\thepage}
 	}
 	\fancyfoot[L]{
-		\textsf{AED - 2022/2023}
+		\textsf{AED -- 2022/2023}
 	}
 	\fancyfoot[C]{\includegraphics[height=.6cm]{ua.pdf}}
 	\renewcommand{\headrulewidth}{0pt}
@@ -48,6 +47,7 @@
 	    morecomment  = [l][\@gobble]{//},
 		  morecomment  = [is]{/*}{*/},
 }
+
 \lstset{ 
 	backgroundcolor=\color{white},   % choose the background color; you must add \usepackage{color} or \usepackage{xcolor}; should come as last argument
 	basicstyle=\small\ttfamily,      % the size of the fonts that are used for the code
@@ -72,7 +72,6 @@
 	tabsize=2,                       % sets default tabsize to 2 spaces
 }
 
-
 \newcommand{\foreign}[1]{\textit{#1}}
 \newcommand{\srcdir}{..}
 
@@ -95,4 +94,8 @@
 
 \section{Introdução}
 Texto aqui
+\pagebreak
+\section{Código}
+\subsection{Script MATLAB que gera os gráficos para análise da hash\_table\_grow}
+\lstinputlisting[style=Matlab-editor, numbers=none, basicstyle=\small\ttfamily]{\srcdir/hash\_table\_grow-test/script.m}
 \end{document}
