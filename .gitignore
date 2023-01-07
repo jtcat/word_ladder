@@ -9,4 +9,7 @@ hash_table_grow-test/hash_table_grow_test
 *.asv
 
 # LaTeX files
-doc/*.log
+doc/relatorio.log
+doc/relatorio.synctex.gz
+doc/relatorio.fls
+doc/relatorio.fdb_latexmk
