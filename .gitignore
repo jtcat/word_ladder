@@ -7,3 +7,6 @@ hash_table_grow-test/hash_table_grow_test
 
 # MATLAB files
 *.asv
+
+# LaTEX files
+doc/*.log
