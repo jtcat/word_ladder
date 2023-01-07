@@ -1,0 +1,98 @@
+\documentclass[portuguese,11pt,a4paper,titlepage]{article}
+
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage[portuguese]{babel}
+\usepackage{blindtext}
+\usepackage[table]{xcolor}
+\usepackage{listings}
+\usepackage[T1]{fontenc}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage[final]{pdfpages}
+\usepackage{siunitx}
+\usepackage[framed, numbered]{matlab-prettifier}
+\usepackage{wrapfig}
+\usepackage{subcaption}
+\usepackage{hyperref}
+
+\hypersetup{
+    colorlinks,
+    citecolor=black,
+    filecolor=black,
+    linkcolor=black,
+    urlcolor=black
+}
+
+\setlength{\headheight}{14.2pt}
+\fancypagestyle{fancy}{
+	\fancyhf{}
+	\fancyhead[C]{A02 - word\_ladder}
+	\fancyfoot[R]{
+		\textsf{\thepage}
+	}
+	\fancyfoot[L]{
+		\textsf{AED - 2022/2023}
+	}
+	\fancyfoot[C]{\includegraphics[height=.6cm]{ua.pdf}}
+	\renewcommand{\headrulewidth}{0pt}
+}
+\pagestyle{fancy}
+
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+
+\lstdefinestyle{c_without_comments}
+{
+	  style=c_with_comments,
+	    morecomment  = [l][\@gobble]{//},
+		  morecomment  = [is]{/*}{*/},
+}
+\lstset{ 
+	backgroundcolor=\color{white},   % choose the background color; you must add \usepackage{color} or \usepackage{xcolor}; should come as last argument
+	basicstyle=\small\ttfamily,      % the size of the fonts that are used for the code
+	breakatwhitespace=false,         % sets if automatic breaks should only happen at whitespace
+	breaklines=true,                 % sets automatic line breaking
+	captionpos=b,                    % sets the caption-position to bottom
+	commentstyle=\color{mygreen},    % comment style
+	extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
+	frameround=tttt,
+	frame=single,	                 % adds a frame around the code
+	keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
+	keywordstyle=\color{blue},       % keyword style
+	language=C,                      % the language of the code
+	morekeywords={*,\ldots},         % if you want to add more keywords to the set
+	numbers=left,                    % where to put the line-numbers; possible values are (none, left, right)
+	numbers=none,
+	rulecolor=\color{black},         % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
+	showspaces=false,                % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
+	showstringspaces=false,          % underline spaces within strings only
+	showtabs=false,                  % show tabs within strings adding particular underscores
+	stringstyle=\color{mymauve},     % string literal style
+	tabsize=2,                       % sets default tabsize to 2 spaces
+}
+
+
+\newcommand{\foreign}[1]{\textit{#1}}
+\newcommand{\srcdir}{..}
+
+\title{ \normalsize Licenciatura em Engenharia Informática\vskip 1.5em
+		\Huge Algoritmos e Estruturas de Dados\vskip .7em
+		\bfseries word\_ladder\vskip 1.5em
+		\includegraphics{ua.pdf}
+}
+\author{
+	João Catarino\\NMec: 93096\and Rúben Garrido\\NMec: 107927\and Nuno Vieira\\NMec: 107283
+}
+\date{\today}
+\addto\captionsportuguese{\renewcommand*\contentsname{Índice}}
+
+\begin{document}
+\maketitle
+
+\tableofcontents
+\pagebreak
+
+\section{Introdução}
+Texto aqui
+\end{document}
