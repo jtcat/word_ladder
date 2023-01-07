@@ -14,10 +14,8 @@ static void hash_table_grow(hash_table_t *hash_table)
 	unsigned int		colnum;
 	unsigned int		free_entries;
 
-	// Determine size_inc based on collision count
 	if (hash_table->number_of_collisions > 0 && (hash_table->hash_table_size / hash_table->number_of_collisions) < 5)
 	{
-		// Find the best j
 		printf("\nFinding best j. Current hash_table_size is %u.\n", hash_table->hash_table_size);
 		printf("  j   | new size | memory | free m | colnum\n");
 		for (j = 1.1; j < 3; j += 0.005)
