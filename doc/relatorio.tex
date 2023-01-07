@@ -43,9 +43,9 @@
 
 \lstdefinestyle{c_without_comments}
 {
-	  style=c_with_comments,
-	    morecomment  = [l][\@gobble]{//},
-		  morecomment  = [is]{/*}{*/},
+	style=c_with_comments,
+	morecomment  = [l][\@gobble]{//},
+	morecomment  = [is]{/*}{*/},
 }
 
 \lstset{ 
@@ -94,11 +94,12 @@
 
 \section{Introdução}
 Texto aqui
+
 \pagebreak
 \section{Código}
 \subsection{Função hash\_table\_grow que testa o melhor incremento}
 \lstinputlisting[firstline=4]{\hashtablegrowdir/latex-hash\_table\_grow-test.c}
 \pagebreak
 \subsection{Script MATLAB que gera os gráficos para análise da hash\_table\_grow}
-\lstinputlisting[style=Matlab-editor, numbers=none, basicstyle=\small\ttfamily]{\hashtablegrowdir/script.m}
+\lstinputlisting[style=Matlab-editor, numbers=none, basicstyle=\small\ttfamily, firstline=5]{\hashtablegrowdir/script.m}
 \end{document}
