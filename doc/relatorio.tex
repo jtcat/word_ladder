@@ -95,7 +95,12 @@
 \section{Introdução}
 Texto aqui
 
+\pagebreak
 \section{Análise do incremento da \foreign{hash table}}
+Por padrão, o tamanho inicial da \foreign{hash table} é 1000. No entanto, quando o número de entradas começa a ser significativo, começam a surgir colisões, o que implica uma perca da complexidade computacional \begin{math}O(1)\end{math}. Para evitar este problema, quando o rácio entre o tamanho da \foreign{hash table} e o número de colisões é superior a 5, o tamanho da \foreign{hash table} é incrementado, através da função \lstinline|hash_table_grow|, que recebe como argumento a referida \foreign{hash table}.
+
+Contudo, a escolha do fator de incremento deve ser ponderada, já que, se for muito pequeno, o número de colisões diminui pouco, e se for muito grande, existe demasiada memória alocada não utilizada, o que leva a um desperdício de recursos. É esta escolha que pretendemos analisar.
+
 \subsection{Explicação do código}
 Texto aqui
 
@@ -138,7 +143,7 @@ Os gráficos em questão incidem sobre o primeiro incremento, onde o tamanho atu
 	\label{fig:htg_ratio_inc}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[h]
 	\centering
 	\includegraphics[width=0.5\linewidth]{\hashtablegrowdir/plots/figure5.png}
 	\caption{Memória livre em função da memória total.}
