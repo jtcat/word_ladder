@@ -142,7 +142,7 @@ Os índices são calculados através do resto da divisão entre o valor retornad
 \section{Verificação de \textit{memory leaks}}
 Para verificar se existem \textit{memory leaks} no programa criado, foi utilizado o \foreign{Valgrind}. Este programa é um conjunto de ferramentas para a deteção de erros de \foreign{memory} e de \foreign{threading}. Para o efeito, foi utilizado o \foreign{Memcheck}, que é uma ferramenta para deteção de erros de memória.
 
-Obteve-se o seguinte resultado, para o programa \lstinline|solution_word_ladder|, com argumento \lstinline|wordlist-four-letters.txt|:
+Obteve-se o seguinte resultado, para o programa \lstinline|solution_word_ladder.c|, com o ficheiro \lstinline|wordlist-four-letters.txt| como argumento:
 
 \begin{verbatim}
 ==500745== Memcheck, a memory error detector
