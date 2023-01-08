@@ -1,9 +1,10 @@
 \babel@toc {portuguese}{}\relax 
 \contentsline {section}{\numberline {1}Introdução}{2}{section.1}%
-\contentsline {section}{\numberline {2}Análise do incremento da \textit {hash table}}{3}{section.2}%
-\contentsline {subsection}{\numberline {2.1}Explicação do código}{3}{subsection.2.1}%
-\contentsline {subsection}{\numberline {2.2}Gráficos obtidos}{4}{subsection.2.2}%
-\contentsline {subsection}{\numberline {2.3}Análise dos resultados}{5}{subsection.2.3}%
-\contentsline {section}{\numberline {3}Código}{6}{section.3}%
-\contentsline {subsection}{\numberline {3.1}Função hash\_table\_grow que testa o melhor incremento}{6}{subsection.3.1}%
-\contentsline {subsection}{\numberline {3.2}Script MATLAB que gera os gráficos para análise da hash\_table\_grow}{7}{subsection.3.2}%
+\contentsline {section}{\numberline {2}Estrutura de dados}{2}{section.2}%
+\contentsline {section}{\numberline {3}Análise do incremento da \textit {hash table}}{3}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Explicação do código}{3}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Gráficos obtidos}{4}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Análise dos resultados}{5}{subsection.3.3}%
+\contentsline {section}{\numberline {4}Código}{6}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Função hash\_table\_grow que testa o melhor incremento}{6}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Script MATLAB que gera os gráficos para análise da hash\_table\_grow}{7}{subsection.4.2}%

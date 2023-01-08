@@ -95,6 +95,20 @@
 \section{Introdução}
 Este trabalho consiste na criação de uma \textit{word ladder} a partir de um ficheiro de texto, que contém uma lista de palavras. A \textit{word ladder} é uma sequência de palavras, em que cada palavra difere da anterior por apenas uma letra. Por exemplo, \textit{tudo, todo, nodo, nado, nada} é uma \textit{word ladder} entre as palavras \textit{tudo} e \textit{nada}.
 
+\section{Estrutura de dados}
+Para armazenar as palavras obtidas a partir do ficheiro de texto, bem como as suas interligações, foi utilizada uma \textit{hash table}, pelo facto de esta possuir uma complexidade computacional \begin{math}O(1)\end{math} para a inserção e remoção de elementos. Esta complexidade computacional é importante, uma vez que, caso esta fosse \begin{math}O(n)\end{math} e existisse um número avultado de palavras, a \textit{word ladder} poderia demorar algum tempo a ser gerada.
+
+A \textit{hash table} é composta por um array de \textit{buckets}, que contêm as palavras e as suas interligações. Cada \textit{bucket} é constituido por uma \textit{linked list}. A \textit{linked list} contém \textit{nodes}, onde, no caso de haver colisões, existirá mais do que um. Cada \textit{node} contém uma palavra e um apontador para o próximo \textit{node} da \textit{linked list}. A figura \ref{fig:hash_table} mostra a estrutura da \textit{hash table}.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\textwidth]{assets/hash_table-structure.pdf}
+	\caption{Estrutura da \textit{hash table}}
+	\label{fig:hash_table}
+\end{figure}
+
+Os índices são calculados através do resto da divisão entre o valor retornado por uma \textit{hash function} e o tamanho da \textit{hash table}. A \textit{hash function} utilizada faz uso do algoritmo \lstinline|CRC32| (acrónimo de \textit{Cyclic Redudancy Check}, 32 bits).
+
 \pagebreak
 \section{Análise do incremento da \textit{hash table}}
 Por padrão, o tamanho inicial da \textit{hash table} é 1000. No entanto, quando o número de entradas começa a ser significativo, começam a surgir colisões, o que implica uma perca da complexidade computacional \begin{math}O(1)\end{math}. Para evitar este problema, quando o rácio entre o tamanho da \textit{hash table} e o número de colisões é superior a 5, o tamanho da \textit{hash table} é incrementado, através da função \lstinline|hash_table_grow|, que recebe como argumento a referida \textit{hash table}.
