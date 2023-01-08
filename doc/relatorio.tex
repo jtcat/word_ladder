@@ -139,6 +139,39 @@ A \textit{hash table} é composta por um array de \textit{buckets}, que contêm 
 Os índices são calculados através do resto da divisão entre o valor retornado por uma \textit{hash function} e o tamanho da \textit{hash table}. A \textit{hash function} utilizada faz uso do algoritmo \lstinline|CRC32| (acrónimo de \textit{Cyclic Redudancy Check}, 32 bits).
 
 \pagebreak
+\section{Verificação de \textit{memory leaks}}
+Para verificar se existem \textit{memory leaks} no programa criado, foi utilizado o \foreign{Valgrind}. Este programa é um conjunto de ferramentas para a deteção de erros de \foreign{memory} e de \foreign{threading}. Para o efeito, foi utilizado o \foreign{Memcheck}, que é uma ferramenta para deteção de erros de memória.
+
+Obteve-se o seguinte resultado, para o programa \lstinline|solution_word_ladder|, com argumento \lstinline|wordlist-four-letters.txt|:
+
+\begin{verbatim}
+==500745== Memcheck, a memory error detector
+==500745== Copyright (C) 2002-2022, and GNU GPL'd, by Julian Seward et al.
+==500745== Using Valgrind-3.19.0 and LibVEX; rerun with -h for copyright info
+==500745== Command: ./solution_word_ladder wordlist-four-letters.txt
+==500745== 
+Your wish is my command:
+  1 WORD       (list the connected component WORD belongs to)
+  2 FROM TO    (list the shortest path from FROM to TO)
+  3 WORD       (list component info)
+  4            (list hash table info)
+  5            (list graph info)
+  0            (terminate)
+> 0
+==500745== 
+==500745== HEAP SUMMARY:
+==500745==   in use at exit: 0 bytes in 0 blocks
+==500745==   total heap usage: 27,700 allocs, 27,700 frees, 60,322,800 bytes
+             allocated
+==500745== 
+==500745== All heap blocks were freed -- no leaks are possible
+==500745== 
+==500745== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+\end{verbatim}
+
+Assim, concluímos que não existem \textit{memory leaks} no programa. 
+
+\pagebreak
 \section{Análise do incremento da \textit{hash table}}
 Por padrão, o tamanho inicial da \textit{hash table} é 1000. No entanto, quando o número de entradas começa a ser significativo, começam a surgir colisões, o que implica uma perca da complexidade computacional \begin{math}O(1)\end{math}. Para evitar este problema, quando o rácio entre o tamanho da \textit{hash table} e o número de colisões é superior a 5, o tamanho da \textit{hash table} é incrementado, através da função \lstinline|hash_table_grow|, que recebe como argumento a referida \textit{hash table}.
 
