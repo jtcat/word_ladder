@@ -93,37 +93,37 @@
 \pagebreak
 
 \section{Introdução}
-Texto aqui
+Este trabalho consiste na criação de uma \textit{word ladder} a partir de um ficheiro de texto, que contém uma lista de palavras. A \textit{word ladder} é uma sequência de palavras, em que cada palavra difere da anterior por apenas uma letra. Por exemplo, \textit{tudo, todo, nodo, nado, nada} é uma \textit{word ladder} entre as palavras \textit{tudo} e \textit{nada}.
 
 \pagebreak
-\section{Análise do incremento da \foreign{hash table}}
-Por padrão, o tamanho inicial da \foreign{hash table} é 1000. No entanto, quando o número de entradas começa a ser significativo, começam a surgir colisões, o que implica uma perca da complexidade computacional \begin{math}O(1)\end{math}. Para evitar este problema, quando o rácio entre o tamanho da \foreign{hash table} e o número de colisões é superior a 5, o tamanho da \foreign{hash table} é incrementado, através da função \lstinline|hash_table_grow|, que recebe como argumento a referida \foreign{hash table}.
+\section{Análise do incremento da \textit{hash table}}
+Por padrão, o tamanho inicial da \textit{hash table} é 1000. No entanto, quando o número de entradas começa a ser significativo, começam a surgir colisões, o que implica uma perca da complexidade computacional \begin{math}O(1)\end{math}. Para evitar este problema, quando o rácio entre o tamanho da \textit{hash table} e o número de colisões é superior a 5, o tamanho da \textit{hash table} é incrementado, através da função \lstinline|hash_table_grow|, que recebe como argumento a referida \textit{hash table}.
 
 Contudo, a escolha do fator de incremento deve ser ponderada, já que, se for muito pequeno, o número de colisões diminui pouco, e se for muito grande, existe demasiada memória alocada não utilizada, o que leva a um desperdício de recursos. É esta escolha que pretendemos analisar.
 
 \subsection{Explicação do código}
-Foi desenvolvida uma nova função \lstinline|hash_table_grow|, num programa à parte, onde, após ser verificada a condição de incremento (rácio entre o tamanho da \foreign{hash table} e o número de colisões), é percorrido um ciclo \lstinline|for|, onde são testados vários valores de \lstinline|j| (fator de incremento).
+Foi desenvolvida uma nova função \lstinline|hash_table_grow|, num programa à parte, onde, após ser verificada a condição de incremento (rácio entre o tamanho da \textit{hash table} e o número de colisões), é percorrido um ciclo \lstinline|for|, onde são testados vários valores de \lstinline|j| (fator de incremento).
 
 \lstinputlisting[firstline=17, lastline=22]{\hashtablegrowdir/latex-hash\_table\_grow-test.c}
 
-Dentro deste ciclo, e após definir inicializar algumas variáveis (p.e., a nova \foreign{hash table} temporária), surgem dois novos ciclos \lstinline|for|.
+Dentro deste ciclo, e após definir inicializar algumas variáveis (p.e., a nova \textit{hash table} temporária), surgem dois novos ciclos \lstinline|for|.
 
-No primeiro \lstinline|for|, é percorrida a \foreign{hash table} inicial, onde, para cada \lstinline|node|, é calculado o novo índice, através do resto da divisão entre o valor retornado da função \lstinline|crc32| e o tamanho da \foreign{hash table}. Após este cálculo, é verificada a existência de colisões no índice calculado anteriormente, e, caso existam, é incrementado o valor de \lstinline|colnum|. Por fim, é associado o nó atual à nova \foreign{hash table}, na localização definida pelo índice.
+No primeiro \lstinline|for|, é percorrida a \textit{hash table} inicial, onde, para cada \lstinline|node|, é calculado o novo índice, através do resto da divisão entre o valor retornado da função \lstinline|crc32| e o tamanho da \textit{hash table}. Após este cálculo, é verificada a existência de colisões no índice calculado anteriormente, e, caso existam, é incrementado o valor de \lstinline|colnum|. Por fim, é associado o nó atual à nova \textit{hash table}, na localização definida pelo índice.
 
 \lstinputlisting[firstline=28, lastline=40]{\hashtablegrowdir/latex-hash\_table\_grow-test.c}
 
-No segundo \lstinline|for|, é percorrida a nova \foreign{hash table}, onde é verificado o número de entradas livres desta. Caso \lstinline|test_new_table[k]| seja nulo, significa que a posição \lstinline|k| da \foreign{hash table} está livre, e, portanto, é incrementado o valor de \lstinline|free_entries|.
+No segundo \lstinline|for|, é percorrida a nova \textit{hash table}, onde é verificado o número de entradas livres desta. Caso \lstinline|test_new_table[k]| seja nulo, significa que a posição \lstinline|k| da \textit{hash table} está livre, e, portanto, é incrementado o valor de \lstinline|free_entries|.
 
 \lstinputlisting[firstline=41, lastline=45]{\hashtablegrowdir/latex-hash\_table\_grow-test.c}
 
-Por fim, é impressa uma linha com os dados obtidos, nomeadamente o fator de incremento \lstinline|j|, o novo tamanho da \foreign{hash table} \lstinline|test_new_size|, a memória total ocupada \lstinline|test_new_size * sizeof(hash_table_node_t *)|, a memória ocupada por entradas livres \lstinline|free_entries * sizeof(hash_table_node_t *)| e o número de colisões \lstinline|colnum|.
+Por fim, é impressa uma linha com os dados obtidos, nomeadamente o fator de incremento \lstinline|j|, o novo tamanho da \textit{hash table} \lstinline|test_new_size|, a memória total ocupada \lstinline|test_new_size * sizeof(hash_table_node_t *)|, a memória ocupada por entradas livres \lstinline|free_entries * sizeof(hash_table_node_t *)| e o número de colisões \lstinline|colnum|.
 
 \lstinputlisting[firstline=46, lastline=46]{\hashtablegrowdir/latex-hash\_table\_grow-test.c}
 
 \subsection{Gráficos obtidos}
 Através do MATLAB, foi possível obter um conjunto de gráficos, que relacionam colisões com memória livre e memória total. O script, disponível na secção \ref{MATLABcode}, obtém os dados através de um ficheiro de texto, que contém a tabela imprimida pelo programa de teste.
 
-Os gráficos em questão incidem sobre o primeiro incremento, onde o tamanho atual da \foreign{hash table} é 1000.
+Os gráficos em questão incidem sobre o primeiro incremento, onde o tamanho atual da \textit{hash table} é 1000.
 
 \begin{figure}[h]
 	\begin{subfigure}{0.47\textwidth}
@@ -159,7 +159,7 @@ Os gráficos em questão incidem sobre o primeiro incremento, onde o tamanho atu
 	\label{fig:htg_ratio_inc}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[ht]
 	\centering
 	\includegraphics[width=0.47\linewidth]{\hashtablegrowdir/plots/figure5.png}
 	\caption{Memória livre em função da memória total.}
@@ -167,13 +167,13 @@ Os gráficos em questão incidem sobre o primeiro incremento, onde o tamanho atu
 \end{figure}
 
 \subsection{Análise dos resultados}
-Em todos os gráficos, é possível observar irregularidades, associadas a uma maior ou menor quantidade de colisões. Isto deve-se ao facto de a \foreign{hash function} não ser perfeita e portanto, consoante o valor de \lstinline|j|, o índice associado a cada \lstinline|node| ser diferente, o que leva a colisões.
+Em todos os gráficos, é possível observar irregularidades, associadas a uma maior ou menor quantidade de colisões. Isto deve-se ao facto de a \textit{hash function} não ser perfeita e portanto, consoante o valor de \lstinline|j|, o índice associado a cada \lstinline|node| ser diferente, o que leva a colisões.
 
 No entanto, é possível observar que, em geral, o número de colisões diminui com o aumento de memória (ou seja, com incrementos maiores), tal como seria esperado. A relação entre o número de colisões e a memória livre segue a mesma tendência. Em ambos os gráficos, verifica-se uma tendência aproximadamente linear.
 
 Quanto aos rácios colisões/memória em função do incremento, observa-se em ambos os gráficos uma curva descendente, do tipo \begin{math}a \times x^b\end{math}, com \begin{math}-2 < b < -1\end{math}. Por este motivo, verifica-se uma diferença mais acentuada no eixo das ordenadas para incrementos menores do que para incrementos maiores. Assim, considera-se que o melhor incremento é o que apresenta um valor de \begin{math}b\end{math} mais próximo de 2, já que, a partir desse valor, o rácio tende a ser mais constante. Por outro lado, a similariedade entre rácios explica-se através do facto de a relação entre a memória livre e a memória total ser aproximadamente linear, com um declive próximo de 1 (ver figura \ref{fig:htg_free_total}).
 
-No que diz respeito à relação entre a memória livre e a memória total (ambas em \foreign{bytes}), apesar das irregularidades, é possível efetuar uma regressão linear, onde se obtém a equação \begin{math}y=0.9583x-3357\end{math}.
+No que diz respeito à relação entre a memória livre e a memória total (ambas em \textit{bytes}), apesar das irregularidades, é possível efetuar uma regressão linear, onde se obtém a equação \begin{math}y=0.9583x-3357\end{math}.
 
 Assim, uma vez que os gráficos não são completamente conclusivos quanto ao melhor fator de incremento, escolhemos utilizar o valor 2, já que este constitui um equilíbrio entre o número de colisões e a memória utilizada.
 
