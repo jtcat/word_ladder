@@ -148,7 +148,7 @@ Cada nó contém uma \textit{linked list} onde são guardadas referências aos n
 	\label{fig:hash_table}
 \end{figure}
 
-Os índices são calculados através do resto da divisão entre o valor retornado por uma \textit{hash function} e o tamanho da \textit{hash table}. A \textit{hash function} utilizada faz uso do algoritmo \lstinline|CRC32| (acrónimo de \textit{Cyclic Redudancy Check}, 32 bits).
+Os índices são calculados através do resto da divisão entre o valor retornado por uma \textit{hash function} e o tamanho da \textit{hash table}. A \textit{hash function} utilizada faz uso do algoritmo \verb|CRC32| (acrónimo de \textit{Cyclic Redudancy Check}, 32 bits).
 
 \section{Implementação}
 Aqui são descritas as alterações feitas e a lógica das funções do programa.
@@ -219,7 +219,7 @@ Em primeiro lugar, é efetuada uma chamada à função \verb|allocate_ptr_deque|
 \section{Verificação de \textit{memory leaks}}
 Para verificar se existem \textit{memory leaks} no programa criado, foi utilizado o \foreign{Valgrind}, um programa constituído por um conjunto de ferramentas para a deteção de erros de memória e de \foreign{threading}. Para o efeito, foi utilizado o \foreign{Memcheck}, que é uma ferramenta para deteção de erros de memória.
 
-Obteve-se o seguinte resultado, para o programa \lstinline|solution_word_ladder.c|, com o ficheiro \lstinline|wordlist-four-letters.txt| como argumento:
+Obteve-se o seguinte resultado, para o programa \verb|solution_word_ladder.c|, com o ficheiro \verb|wordlist-four-letters.txt| como argumento:
 
 \begin{verbatim}
 ==500745== Memcheck, a memory error detector
@@ -250,26 +250,26 @@ Assim, concluímos que não existem \textit{memory leaks} no programa.
 
 \pagebreak
 \section{Análise do incremento da \textit{hash table}}
-Por padrão, o tamanho inicial da \textit{hash table} é 1000. No entanto, quando o número de entradas começa a ser significativo, começam a surgir colisões, o que implica uma perca da complexidade computacional \begin{math}O(1)\end{math}. Para evitar este problema, quando o rácio entre o tamanho da \textit{hash table} e o número de colisões é superior a 5, o tamanho da \textit{hash table} é incrementado, através da função \lstinline|hash_table_grow|, que recebe como argumento a referida \textit{hash table}.
+Por padrão, o tamanho inicial da \textit{hash table} é 1000. No entanto, quando o número de entradas começa a ser significativo, começam a surgir colisões, o que implica uma perca da complexidade computacional \begin{math}O(1)\end{math}. Para evitar este problema, quando o rácio entre o tamanho da \textit{hash table} e o número de colisões é superior a 5, o tamanho da \textit{hash table} é incrementado, através da função \verb|hash_table_grow|, que recebe como argumento a referida \textit{hash table}.
 
 Contudo, a escolha do fator de incremento deve ser ponderada, já que, se for muito pequeno, o número de colisões diminui pouco, e se for muito grande, existe demasiada memória alocada não utilizada, o que leva a um desperdício de recursos. É esta escolha que pretendemos analisar.
 
 \subsection{Explicação do código}
-Foi desenvolvida uma nova função \lstinline|hash_table_grow|, num programa à parte, em que, após ser verificada a condição de incremento (rácio entre o tamanho da \textit{hash table} e o número de colisões), é percorrido um ciclo \lstinline|for|, onde são testados vários valores de \lstinline|j| (fator de incremento).
+Foi desenvolvida uma nova função \verb|hash_table_grow|, num programa à parte, em que, após ser verificada a condição de incremento (rácio entre o tamanho da \textit{hash table} e o número de colisões), é percorrido um ciclo \verb|for|, onde são testados vários valores de \verb|j| (fator de incremento).
 
 \lstinputlisting[firstline=17, lastline=22]{\hashtablegrowdir/latex-hash\_table\_grow-test.c}
 
-Dentro deste ciclo, e após inicializar algumas variáveis (p.e., a nova \textit{hash table} temporária), surgem dois novos ciclos \lstinline|for|.
+Dentro deste ciclo, e após inicializar algumas variáveis (p.e., a nova \textit{hash table} temporária), surgem dois novos ciclos \verb|for|.
 
-No primeiro \lstinline|for|, é percorrida a \textit{hash table} inicial, onde, para cada \lstinline|node|, é calculado o novo índice, através do resto da divisão entre o valor retornado da função \lstinline|crc32| e o tamanho da \textit{hash table}. Após este cálculo, é verificada a existência de colisões no índice calculado anteriormente, e, caso existam, é incrementado o valor de \lstinline|colnum|. Por fim, é associado o nó atual à nova \textit{hash table}, na localização definida pelo índice.
+No primeiro \verb|for|, é percorrida a \textit{hash table} inicial, onde, para cada \verb|node|, é calculado o novo índice, através do resto da divisão entre o valor retornado da função \verb|crc32| e o tamanho da \textit{hash table}. Após este cálculo, é verificada a existência de colisões no índice calculado anteriormente, e, caso existam, é incrementado o valor de \verb|colnum|. Por fim, é associado o nó atual à nova \textit{hash table}, na localização definida pelo índice.
 
 \lstinputlisting[firstline=28, lastline=40]{\hashtablegrowdir/latex-hash\_table\_grow-test.c}
 
-No segundo \lstinline|for|, é percorrida a nova \textit{hash table}, onde é verificado o número de entradas livres desta. Caso \lstinline|test_new_table[k]| seja nulo, significa que a posição \lstinline|k| da \textit{hash table} está livre, e, portanto, é incrementado o valor de \lstinline|free_entries|.
+No segundo \verb|for|, é percorrida a nova \textit{hash table}, onde é verificado o número de entradas livres desta. Caso \lstinline|test_new_table[k]| seja nulo, significa que a posição \verb|k| da \textit{hash table} está livre, e, portanto, é incrementado o valor de \verb|free_entries|.
 
 \lstinputlisting[firstline=41, lastline=45]{\hashtablegrowdir/latex-hash\_table\_grow-test.c}
 
-Por último, é impressa uma linha com os dados obtidos, nomeadamente o fator de incremento \lstinline|j|, o novo tamanho da \textit{hash table} \lstinline|test_new_size|, a memória total ocupada \lstinline|test_new_size * sizeof(hash_table_node_t *)|, a memória ocupada por entradas livres \lstinline|free_entries * sizeof(hash_table_node_t *)| e o número de colisões \lstinline|colnum|.
+Por último, é impressa uma linha com os dados obtidos, nomeadamente o fator de incremento \verb|j|, o novo tamanho da \textit{hash table} \verb|test_new_size|, a memória total ocupada \lstinline|test_new_size * sizeof(hash_table_node_t *)|, a memória ocupada por entradas livres \lstinline|free_entries * sizeof(hash_table_node_t *)| e o número de colisões \verb|colnum|.
 
 \lstinputlisting[firstline=46, lastline=46]{\hashtablegrowdir/latex-hash\_table\_grow-test.c}
 
@@ -320,7 +320,7 @@ Os gráficos em questão incidem sobre o primeiro incremento, onde o tamanho atu
 \end{figure}
 
 \subsection{Análise dos resultados}
-Em todos os gráficos, é possível observar irregularidades, associadas a uma maior ou menor quantidade de colisões. Isto deve-se ao facto de a \textit{hash function} não ser perfeita e portanto, consoante o valor de \lstinline|j|, o índice associado a cada \lstinline|node| ser diferente.
+Em todos os gráficos, é possível observar irregularidades, associadas a uma maior ou menor quantidade de colisões. Isto deve-se ao facto de a \textit{hash function} não ser perfeita e portanto, consoante o valor de \verb|j|, o índice associado a cada \verb|node| ser diferente.
 
 No entanto, é possível observar que, em geral, o número de colisões diminui com o aumento de memória (ou seja, com incrementos maiores), tal como seria esperado. A relação entre o número de colisões e a memória livre segue a mesma tendência. Em ambos os gráficos, verifica-se uma tendência aproximadamente linear.
 
