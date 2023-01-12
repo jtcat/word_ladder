@@ -211,6 +211,9 @@ mente, são somados os numeros de vértices e arcos, é decrementado o número d
 e é atualizado o tamanho do maior componente.
 
 \subsubsection{breadh\_first\_search}
+A função \verb|breadh_first_search|, cujos argumentos são o número máximo de vértices, uma lista de vértices, o array de origem e o ponto de destino, tem como objetivo retornar o número de vértices visitados. Esta implementa o algoritmo \textit{Breadth-first search}, que permite procurar um node específico numa árvore.
+
+Em primeiro lugar, é efetuada uma chamada à função \verb|allocate_ptr_deque| -- que devolve uma \textit{deque} --, e uma chamada à função \verb|deque_put_hi|, que aceita como parâmetros de entrada a \textit{deque} e o array de origem. De seguida, dentro de um ciclo \verb|while| onde o tamanho da \textit{deque} é positivo, é incrementado os valores de \verb|visited| e \verb|list_len|, e, num ciclo \verb|for|, são atualizados os valores e endereços de \verb|vertex->visited| e \verb|vertex->previous|.
 
 \pagebreak
 \section{Verificação de \textit{memory leaks}}
