@@ -103,6 +103,7 @@
 \newcommand{\foreign}[1]{\textit{#1}}
 \newcommand{\srcdir}{..}
 \newcommand{\hashtablegrowdir}{\srcdir/hash\_table\_grow-test}
+\setcounter{secnumdepth}{2}
 
 \title{ \normalsize Licenciatura em Engenharia Informática\vskip 1.5em
 		\Huge Algoritmos e Estruturas de Dados\vskip .7em
@@ -122,12 +123,23 @@
 \pagebreak
 
 \section{Introdução}
-Este trabalho tem por base a criação de uma \textit{word ladder} a partir de um ficheiro de texto, que contém uma lista de palavras. A \textit{word ladder} é uma sequência de palavras, em que cada uma destas difere da anterior por apenas uma letra. Por exemplo, \textit{tudo, todo, nodo, nado, nada} é uma \textit{word ladder} entre as palavras \textit{tudo} e \textit{nada}.
+Este trabalho centra-se no estudo de dicionários de palavras, interpretando cada um como um grafo não-orientado
+onde cada nó representa uma palavra. Palavras que diferem num só caráter são unidas por um arco.
+Deste modo, é possível determinar \textit{word ladders} entre palavras: os caminhos mais curtos entre elas, 
+compostos por outras palavras. Um exemplo será: \textit{tudo, todo, nodo, nado, nada}.
+Objetivos incluem implementar uma \textit{hash table}, implementar a representação de um grafo não-orientado,
+implementar a estrutura de dados \textit{union find} determinar o componente complexo de uma palavra, o diâmetro
+de um componente conexo, bem como a maior \textit{word ladder} existente no dicionário fornecido.
 
-\section{Estrutura de dados}
-Para armazenar as palavras obtidas a partir do ficheiro de texto, bem como as suas interligações, foi utilizada uma \textit{hash table}, uma vez que esta possui uma complexidade computacional \begin{math}O(1)\end{math} para a inserção e remoção de elementos. Esta complexidade computacional é importante, dado que, caso esta fosse \begin{math}O(n)\end{math} e existisse um número avultado de palavras, a \textit{word ladder} poderia demorar algum tempo a ser gerada.
+\section{Representação do problema}
+A implementação do grafo foi feita através de uma \textit{linked hash table}, uma vez que esta possui uma complexidade
+computacional \begin{math}O(1)\end{math} para a inserção e procura de elementos. Esta complexidade computacional
+é necessária, dado que a geração de arcos entre palavras implica verificar se todas a permutações de mudança de 
+um caráter de um nó correspondem a palavras contidas no dicionário.
 
-A \textit{hash table} é composta por um array de \textit{buckets}, que contêm as palavras e as suas interligações. Cada \textit{bucket} é constituido por uma \textit{linked list}. A \textit{linked list} contém \textit{nodes}, onde, no caso de haver colisões, existirá mais do que um. Por sua vez, cada \textit{node} contém uma palavra e um apontador para o próximo \textit{node} da \textit{linked list}. A figura \ref{fig:hash_table} mostra a estrutura da \textit{hash table}.
+A \textit{linked hash table} é composta por um array de \textit{buckets}: \textit{linked lists} que contêm nós. Nós
+aos quais sejam atribuidos o mesmo índice de array pela função de dispersão são colocados no inicio da lista presente nesse índice.
+Cada nó contém uma \textit{linked list} onde são guardadas referências aos nós adjacentes. A figura \ref{fig:hash_table} mostra a estrutura da \textit{hash table}.
 
 \begin{figure}[h]
 	\centering
@@ -137,6 +149,67 @@ A \textit{hash table} é composta por um array de \textit{buckets}, que contêm 
 \end{figure}
 
 Os índices são calculados através do resto da divisão entre o valor retornado por uma \textit{hash function} e o tamanho da \textit{hash table}. A \textit{hash function} utilizada faz uso do algoritmo \lstinline|CRC32| (acrónimo de \textit{Cyclic Redudancy Check}, 32 bits).
+
+\section{Implementação}
+Aqui são descritas as alterações feitas e a lógica das funções do programa.
+
+\subsection{Funções de \textit{Hash Table}}
+
+\subsubsection{hash\_table\_create}
+Esta função aloca memória para uma estrutura de dados do tipo definido \verb|hash_table_t| que
+representa a \foreign{hash table} e para o seu \foreign{array} interno \verb|heads| que irá
+conter as entradas da tabela. O tamanho inicial da tabela foi definido no macro
+\verb|_hash_table_init_size_| e as suas entradas são inicializadas a zero de forma implícita pela
+função \verb|calloc|. No final, é guardado o tamanho inicial da tabela na estrutura de dados. A função termina o programa se uma das alocações não for bem sucessida.
+
+\subsubsection{hash\_table\_grow}
+\verb|hash_table_grow| é responsável por aumentar o tamanho da \foreign{hash table}. Ela própria determina a condição de crescimento.
+\subsubsection{hash\_table\_free}
+Esta função desaloca a memória previamente reservada para a \foreign{hash table} e outras
+estruturas de dados nela contidas. Ela começa por iterar sobre todas as posições do \foreign{array}, chamando a função \verb|free\_hash\_llist|, libertando a \foreign{linked list} nessa posição. Essa função por sua vez irá iterar sobre todos os nós da lista através
+do ponteiro \verb|next| e chamar a função \verb|free_hash_table_node| sobre cada nó, que irá primeiro libertar a lista de adjacência com a função \verb|free_adjacency_llist| e depois o próprio nó. A função \verb|free_adjacency_llist| simplesmente itera sobre todos
+os membros da lista ligada e liberta cada um deles.
+
+\subsubsection{find\_word}
+A função dedicada à procura e inserção de elementos na \foreign{hash table}. Primeiro, é
+calculado o indice. Ele resulta do resto da divisão entre o resultado da
+aplicação da \foreign{hash function} à palavra desejada e o tamanho máximo da tabela. Esta operação distribui o indice da palavra entre 0 e o tamaho da tabela. A função irá agora
+iterar sobre a lista ligada na posição calculada, procurando um nó igual através da
+função \verb|strcmp| e retórna-o se for o caso. Se a palavra não existir e a opção
+\verb|insert_if_not_found| for verdadeira, o programa aloca um novo nó para a palavra
+através da função \verb|create_word_node| e coloca-o na lista ligada, atualizando valores
+estatísticos na \foreign{hash table}.
+
+\subsection{Funções de grafo \foreign{union-find}}
+
+\subsubsection{find\_representative}
+Função responsável pela determinação do nó representatnte do componente conexo de um
+nó requisitado. Antes de devolver o resultado, a função atualiza os representates dos 
+nós percorridos anteriormente. O seu funcionamento consiste em iterar sobre
+o representante do nó dado como argumento recursivamente até que o representante de um nó seja ele próprio.
+Tendo determinado o representante, parte novamente do nó passado como argumento e altera
+o representante de forma recursiva para o representante determinado até chegar a este novamente. Desta forma, o caminho para o representante é simplificado e chamadas posteriores
+com o mesmo nó como argumento serão mais rápidas.
+
+\subsubsection{add\_edge}
+Esta função tenta adicionar um arco entre um nó existente e uma palavra que pode não
+existir. Tem também a função de implementar os aspetos da estrutura de dados
+\foreign{Union-Find}. Ela começa por procurar a \foreign{string} dada no grafo,
+retornando se não
+a encontrar. Caso contrário, procura o segundo nó na lista de adjacência do primeiro e
+retorna se for o caso, para garantir que o arco não é duplicado. Podendo agora adicionar
+o arco, é incrementado o contador de arcos da tabela e são adicionados nós de adjacência
+às tabelas de adjacência das palavras. A função \verb|insert_edge| trata de alocar o nó
+de adjacência para cada vértice e de os colocar nas listas respetivas. Agora a função
+trata de executar a operação \foreign{Union} entre os conjuntos (componentes conexos)
+de cada vértice. Primeiro são determinados os representantes de cada um através da função
+\verb|find\_representative| vista anteriormente. Se estes forem diferentes, a operação
+ocorre. Para minimizar o tamanho do caminho de representantes, o nó com menos vértices
+na altura da operação é escolhido como o representante do novo componente conexo. Final%
+mente, são somados os numeros de vértices e arcos, é decrementado o número de componentes
+e é atualizado o tamanho do maior componente.
+
+\subsubsection{breadh\_first\_search}
 
 \pagebreak
 \section{Verificação de \textit{memory leaks}}

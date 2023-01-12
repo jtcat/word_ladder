@@ -13,3 +13,7 @@ doc/relatorio.log
 doc/relatorio.synctex.gz
 doc/relatorio.fls
 doc/relatorio.fdb_latexmk
+*.aux
+*.log
+*.out
+*.toc
