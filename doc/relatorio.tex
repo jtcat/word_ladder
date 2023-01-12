@@ -163,10 +163,11 @@ conter as entradas da tabela. O tamanho inicial da tabela foi definido no macro
 função \verb|calloc|. No final, é guardado o tamanho inicial da tabela na estrutura de dados. A função termina o programa se uma das alocações não for bem sucessida.
 
 \subsubsection{hash\_table\_grow}
-\verb|hash_table_grow| é responsável por aumentar o tamanho da \foreign{hash table}. Ela própria determina a condição de crescimento.
+\verb|hash_table_grow| é a função responsável por aumentar o tamanho da \foreign{hash table}. A sua condição de incremento depende do rácio entre o tamanho desta e o número de colisões, onde, caso seja superior a 5, verificar-se-á o incremento. A função inicializa uma nova tabela (com um tamanho igual ao dobro da anterior) usando a função \verb|calloc| e, para cada \textit{node} desta, recalcula o seu índice, através da função \verb|crc32|, e insere-o na nova tabela. Por fim, os endereços para o array \verb|heads| e para o tamanho da tabela (\verb|hash_table_size|) são atualizados.
+
 \subsubsection{hash\_table\_free}
 Esta função desaloca a memória previamente reservada para a \foreign{hash table} e outras
-estruturas de dados nela contidas. Ela começa por iterar sobre todas as posições do \foreign{array}, chamando a função \verb|free\_hash\_llist|, libertando a \foreign{linked list} nessa posição. Essa função por sua vez irá iterar sobre todos os nós da lista através
+estruturas de dados nela contidas. Ela começa por iterar sobre todas as posições do \foreign{array}, chamando a função \verb|free_hash_llist|, libertando a \foreign{linked list} nessa posição. Essa função por sua vez irá iterar sobre todos os nós da lista através
 do ponteiro \verb|next| e chamar a função \verb|free_hash_table_node| sobre cada nó, que irá primeiro libertar a lista de adjacência com a função \verb|free_adjacency_llist| e depois o próprio nó. A função \verb|free_adjacency_llist| simplesmente itera sobre todos
 os membros da lista ligada e liberta cada um deles.
 
@@ -203,7 +204,7 @@ o arco, é incrementado o contador de arcos da tabela e são adicionados nós de
 de adjacência para cada vértice e de os colocar nas listas respetivas. Agora a função
 trata de executar a operação \foreign{Union} entre os conjuntos (componentes conexos)
 de cada vértice. Primeiro são determinados os representantes de cada um através da função
-\verb|find\_representative| vista anteriormente. Se estes forem diferentes, a operação
+\verb|find_representative| vista anteriormente. Se estes forem diferentes, a operação
 ocorre. Para minimizar o tamanho do caminho de representantes, o nó com menos vértices
 na altura da operação é escolhido como o representante do novo componente conexo. Final%
 mente, são somados os numeros de vértices e arcos, é decrementado o número de componentes
