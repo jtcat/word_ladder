@@ -208,7 +208,28 @@ A função \verb|deque_put_hi|, que aceita como parâmetros de entrada uma \text
 \subsubsection{deque\_get\_lo}
 Esta função aceita como parâmetro de entrada uma \textit{deque}, remove o primeiro elemento desta, atualiza os valores associados e retorna o elemento removido.
 
-\pagebreak
+\section{\textit{Word ladders} interessantes}
+\subsection{Palavras com 4 letras}
+A maior \textit{word ladder} encontrada ocorre entre as palavras ``Kong'' e ``está'':
+\begin{enumerate}
+	\itemsep 0em
+	\item Kong
+	\item King
+	\item Ping
+	\item Pina
+	\item tina
+	\item tino
+	\item tipo
+	\item aipo
+	\item arpo
+	\item arpe
+	\item arte
+	\item ante
+	\item ente
+	\item este
+	\item está
+\end{enumerate}
+
 \section{Verificação de \textit{memory leaks}}
 Para verificar se existem \textit{memory leaks} no programa criado, foi utilizado o \foreign{Valgrind}, um programa constituído por um conjunto de ferramentas para a deteção de erros de memória e de \foreign{threading}. Para o efeito, foi utilizado o \foreign{Memcheck}, que é uma ferramenta para deteção de erros de memória.
 
