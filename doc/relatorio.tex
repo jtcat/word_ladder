@@ -123,22 +123,15 @@
 \pagebreak
 
 \section{Introdução}
-Este trabalho centra-se no estudo de dicionários de palavras, interpretando cada um como um grafo não-orientado
-onde cada nó representa uma palavra. Palavras que diferem num só caráter são unidas por um arco.
-Deste modo, é possível determinar \textit{word ladders} entre palavras: os caminhos mais curtos entre elas, 
-compostos por outras palavras. Um exemplo será: \textit{tudo, todo, nodo, nado, nada}.
-Objetivos incluem implementar uma \textit{hash table}, implementar a representação de um grafo não-orientado,
-implementar a estrutura de dados \textit{union find} determinar o componente complexo de uma palavra, o diâmetro
-de um componente conexo, bem como a maior \textit{word ladder} existente no dicionário fornecido.
+Este trabalho centra-se no estudo de dicionários de palavras, interpretando cada um como um grafo não-orientado, onde cada nó representa uma palavra. Palavras que diferem num só caracter são unidas por um arco.
+Deste modo, é possível determinar \textit{word ladders} entre palavras: os caminhos mais curtos entre elas, compostos por outras palavras. Por exemplo, \textit{tudo, todo, nodo, nado, nada} é uma \textit{word ladder} entre as palavras \textit{tudo} e \textit{nada}.
+Os objetivos deste trabalho incluem implementar uma \textit{hash table}, a representação de um grafo não-orientado e a estrutura de dados \textit{union find}, bem como determinar o componente complexo de uma palavra, o diâmetro de um componente conexo e a maior \textit{word ladder} existente no dicionário fornecido.
 
 \section{Representação do problema}
-A implementação do grafo foi feita através de uma \textit{linked hash table}, uma vez que esta possui uma complexidade
-computacional \begin{math}O(1)\end{math} para a inserção e procura de elementos. Esta complexidade computacional
-é necessária, dado que a geração de arcos entre palavras implica verificar se todas a permutações de mudança de 
-um caráter de um nó correspondem a palavras contidas no dicionário.
+A implementação do grafo foi feita através de uma \textit{linked hash table}, uma vez que esta possui uma complexidade computacional \begin{math}O(1)\end{math} para a inserção e procura de elementos.
+Esta complexidade computacional é importante, dado que a geração de arcos entre palavras implica verificar se todas a permutações de mudança de um caracter de um nó correspondem a palavras contidas no dicionário. Para além disso, caso a complexidade computacional fosse \begin{math}O(n)\end{math} e existisse um número avultado de palavras, a \textit{word ladder} poderia demorar algum tempo a ser gerada.
 
-A \textit{linked hash table} é composta por um array de \textit{buckets}: \textit{linked lists} que contêm nós. Nós
-aos quais sejam atribuidos o mesmo índice de array pela função de dispersão são colocados no inicio da lista presente nesse índice.
+A \textit{linked hash table} é composta por um array de \textit{buckets}: \textit{linked lists} que contêm nós. Nós aos quais sejam atribuidos o mesmo índice de array pela função de dispersão são colocados no inicio da lista presente nesse índice.
 Cada nó contém uma \textit{linked list} onde são guardadas referências aos nós adjacentes. A figura \ref{fig:hash_table} mostra a estrutura da \textit{hash table}.
 
 \begin{figure}[h]
@@ -171,15 +164,24 @@ estruturas de dados nela contidas. Ela começa por iterar sobre todas as posiç�
 do ponteiro \verb|next| e chamar a função \verb|free_hash_table_node| sobre cada nó, que irá primeiro libertar a lista de adjacência com a função \verb|free_adjacency_llist| e depois o próprio nó. A função \verb|free_adjacency_llist| simplesmente itera sobre todos
 os membros da lista ligada e liberta cada um deles.
 
+\subsubsection{create\_word\_node}
+Cria um novo nó de \textit{hash table} com a palavra fornecida como argumento. Este nó, cuja memória alocada é obtida através da função \verb|allocate_hash_table_node|, é inicializado com a palavra e alguns parâmetros predefinidos. Por fim, a função retorna o endereço do \textit{node} recém-criado.
+
+\subsubsection{crc32}\label{sssec:crc32}
+\textit{Hash function} que permite calcular o índice de um determinado nó na \textit{hash table}. Esta utiliza o algoritmo \textit{Cyclic Redudancy Check}, a 32 bits, com uma constante ``mágica'' \verb|0xAED00022u| para calcular o CRC da palavra fornecida como argumento.
+
 \subsubsection{find\_word}
 A função dedicada à procura e inserção de elementos na \foreign{hash table}. Primeiro, é
-calculado o indice. Ele resulta do resto da divisão entre o resultado da
-aplicação da \foreign{hash function} à palavra desejada e o tamanho máximo da tabela. Esta operação distribui o indice da palavra entre 0 e o tamaho da tabela. A função irá agora
+calculado o índice. Ele resulta do resto da divisão entre o resultado da
+aplicação da \foreign{hash function} à palavra desejada (ver secção \ref{sssec:crc32}) e o tamanho máximo da tabela. Esta operação distribui o indice da palavra entre 0 e o tamaho da tabela. A função irá agora
 iterar sobre a lista ligada na posição calculada, procurando um nó igual através da
 função \verb|strcmp| e retórna-o se for o caso. Se a palavra não existir e a opção
 \verb|insert_if_not_found| for verdadeira, o programa aloca um novo nó para a palavra
 através da função \verb|create_word_node| e coloca-o na lista ligada, atualizando valores
 estatísticos na \foreign{hash table}.
+
+\subsubsection{similar\_words}
+É responsável por encontrar palavras semelhantes à palavra fornecida como argumento. A verificação é baseada em caracteres \textit{Unicode}, onde, para cada caracter da palavra, substitui-se [o caracter] pelos vários caracteres aceites. Caso a nova palavra exista na \foreign{hash table}, é efetuada uma chamada à função \verb|add_edge| (ver secção \ref{sssec:addedge}). A função termina quando não existirem mais caracteres para substituir.
 
 \subsection{Funções de grafo \foreign{union-find}}
 
@@ -192,7 +194,7 @@ Tendo determinado o representante, parte novamente do nó passado como argumento
 o representante de forma recursiva para o representante determinado até chegar a este novamente. Desta forma, o caminho para o representante é simplificado e chamadas posteriores
 com o mesmo nó como argumento serão mais rápidas.
 
-\subsubsection{add\_edge}
+\subsubsection{add\_edge}\label{sssec:addedge}
 Esta função tenta adicionar um arco entre um nó existente e uma palavra que pode não
 existir. Tem também a função de implementar os aspetos da estrutura de dados
 \foreign{Union-Find}. Ela começa por procurar a \foreign{string} dada no grafo,
