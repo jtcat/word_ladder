@@ -131,7 +131,8 @@ Os objetivos deste trabalho incluem implementar uma \textit{hash table}, a repre
 A implementação do grafo foi feita através de uma \textit{linked hash table}, uma vez que esta possui uma complexidade computacional \begin{math}O(1)\end{math} para a inserção e procura de elementos.
 Esta complexidade computacional é importante, dado que a geração de arcos entre palavras implica verificar se todas a permutações de mudança de um caracter de um nó correspondem a palavras contidas no dicionário. Para além disso, caso a complexidade computacional fosse \begin{math}O(n)\end{math} e existisse um número avultado de palavras, a \textit{word ladder} poderia demorar algum tempo a ser gerada.
 
-A \textit{linked hash table} é composta por um array de \textit{buckets}: \textit{linked lists} que contêm nós. Nós aos quais sejam atribuidos o mesmo índice de array pela função de dispersão são colocados no inicio da lista presente nesse índice.
+A \textit{linked hash table} é composta por um array de \textit{buckets}: \textit{linked lists} que contêm nós.
+Nós aos quais sejam atribuidos o mesmo índice de array pela função de dispersão são colocados no inicio da lista presente nesse índice.
 Cada nó contém uma \textit{linked list} onde são guardadas referências aos nós adjacentes. A figura \ref{fig:hash_table} mostra a estrutura da \textit{hash table}.
 
 \begin{figure}[h]
@@ -144,23 +145,19 @@ Cada nó contém uma \textit{linked list} onde são guardadas referências aos n
 Os índices são calculados através do resto da divisão entre o valor retornado por uma \textit{hash function} e o tamanho da \textit{hash table}. A \textit{hash function} utilizada faz uso do algoritmo \verb|CRC32| (acrónimo de \textit{Cyclic Redudancy Check}, 32 bits).
 
 \section{Implementação}
-Aqui são descritas as alterações feitas e a lógica das funções do programa.
-
-\subsection{Funções de \textit{Hash Table}}
+\subsection{Funções de \textit{hash table}}
 
 \subsubsection{hash\_table\_create}
-Esta função aloca memória para uma estrutura de dados do tipo definido \verb|hash_table_t| que
-representa a \foreign{hash table} e para o seu \foreign{array} interno \verb|heads| que irá
-conter as entradas da tabela. O tamanho inicial da tabela foi definido no macro
+Esta função aloca memória para uma estrutura de dados do tipo definido \verb|hash_table_t|, que representa a \foreign{hash table}, e para o seu \foreign{array} interno \verb|heads| que irá conter as entradas da tabela. O tamanho inicial da tabela é definido no macro
 \verb|_hash_table_init_size_| e as suas entradas são inicializadas a zero de forma implícita pela
-função \verb|calloc|. No final, é guardado o tamanho inicial da tabela na estrutura de dados. A função termina o programa se uma das alocações não for bem sucessida.
+função \verb|calloc|. No final, é guardado o tamanho inicial da tabela na estrutura de dados. A função termina o programa se uma das alocações não for bem sucedida.
 
 \subsubsection{hash\_table\_grow}
 \verb|hash_table_grow| é a função responsável por aumentar o tamanho da \foreign{hash table}. A sua condição de incremento depende do rácio entre o tamanho desta e o número de colisões, onde, caso seja superior a 5, verificar-se-á o incremento. A função inicializa uma nova tabela (com um tamanho igual ao dobro da anterior) usando a função \verb|calloc| e, para cada \textit{node} desta, recalcula o seu índice, através da função \verb|crc32|, e insere-o na nova tabela. Por fim, os endereços para o array \verb|heads| e para o tamanho da tabela (\verb|hash_table_size|) são atualizados.
 
 \subsubsection{hash\_table\_free}
 Esta função desaloca a memória previamente reservada para a \foreign{hash table} e outras
-estruturas de dados nela contidas. Ela começa por iterar sobre todas as posições do \foreign{array}, chamando a função \verb|free_hash_llist|, libertando a \foreign{linked list} nessa posição. Essa função por sua vez irá iterar sobre todos os nós da lista através
+estruturas de dados nela contidas. Esta começa por iterar sobre todas as posições do \foreign{array}, chamando a função \verb|free_hash_llist|, libertando a \foreign{linked list} nessa posição. Por sua vez, esta irá iterar sobre todos os nós da lista através
 do ponteiro \verb|next| e chamar a função \verb|free_hash_table_node| sobre cada nó, que irá primeiro libertar a lista de adjacência com a função \verb|free_adjacency_llist| e depois o próprio nó. A função \verb|free_adjacency_llist| simplesmente itera sobre todos
 os membros da lista ligada e liberta cada um deles.
 
@@ -171,51 +168,35 @@ Cria um novo nó de \textit{hash table} com a palavra fornecida como argumento. 
 \textit{Hash function} que permite calcular o índice de um determinado nó na \textit{hash table}. Esta utiliza o algoritmo \textit{Cyclic Redudancy Check}, a 32 bits, com uma constante ``mágica'' \verb|0xAED00022u| para calcular o CRC da palavra fornecida como argumento.
 
 \subsubsection{find\_word}
-A função dedicada à procura e inserção de elementos na \foreign{hash table}. Primeiro, é
-calculado o índice. Ele resulta do resto da divisão entre o resultado da
-aplicação da \foreign{hash function} à palavra desejada (ver secção \ref{sssec:crc32}) e o tamanho máximo da tabela. Esta operação distribui o indice da palavra entre 0 e o tamaho da tabela. A função irá agora
-iterar sobre a lista ligada na posição calculada, procurando um nó igual através da
-função \verb|strcmp| e retórna-o se for o caso. Se a palavra não existir e a opção
-\verb|insert_if_not_found| for verdadeira, o programa aloca um novo nó para a palavra
-através da função \verb|create_word_node| e coloca-o na lista ligada, atualizando valores
-estatísticos na \foreign{hash table}.
+Função dedicada à procura e inserção de elementos na \foreign{hash table}. 
+É calculado o índice, que resulta do resto da divisão entre o resultado da aplicação da \foreign{hash function} à palavra desejada (ver secção \ref{sssec:crc32}) e o tamanho máximo da tabela. Esta operação distribui o indice da palavra entre 0 e o tamaho da tabela. De seguida, a função itera sobre a lista ligada na posição calculada, procurando um nó igual através da função \verb|strcmp|, e retorna-o se for o caso.
+Caso a palavra não exista e a opção \verb|insert_if_not_found| seja verdadeira, o programa aloca um novo nó para a palavra através da função \verb|create_word_node| e coloca-o na lista ligada, atualizando os valores estatísticos na \foreign{hash table}.
 
 \subsubsection{similar\_words}
-É responsável por encontrar palavras semelhantes à palavra fornecida como argumento. A verificação é baseada em caracteres \textit{Unicode}, onde, para cada caracter da palavra, substitui-se [o caracter] pelos vários caracteres aceites. Caso a nova palavra exista na \foreign{hash table}, é efetuada uma chamada à função \verb|add_edge| (ver secção \ref{sssec:addedge}). A função termina quando não existirem mais caracteres para substituir.
+É responsável por encontrar palavras semelhantes à palavra fornecida como argumento. A verificação é baseada em caracteres \textit{Unicode}, onde, para cada caracter da palavra, este é substituído pelos vários caracteres aceites. Caso a nova palavra exista na \foreign{hash table}, é efetuada uma chamada à função \verb|add_edge| (ver secção \ref{sssec:addedge}). A função termina quando não existirem mais caracteres para substituir.
 
 \subsection{Funções de grafo \foreign{union-find}}
 
 \subsubsection{find\_representative}
-Função responsável pela determinação do nó representatnte do componente conexo de um
-nó requisitado. Antes de devolver o resultado, a função atualiza os representates dos 
-nós percorridos anteriormente. O seu funcionamento consiste em iterar sobre
-o representante do nó dado como argumento recursivamente até que o representante de um nó seja ele próprio.
-Tendo determinado o representante, parte novamente do nó passado como argumento e altera
-o representante de forma recursiva para o representante determinado até chegar a este novamente. Desta forma, o caminho para o representante é simplificado e chamadas posteriores
-com o mesmo nó como argumento serão mais rápidas.
+Função responsável pela determinação do nó representante do componente conexo de um nó requisitado. Antes de devolver o resultado, a função atualiza os representates dos nós percorridos anteriormente.
+
+O seu funcionamento consiste em iterar sobre o representante do nó dado como argumento recursivamente até que o representante de um nó seja ele próprio.
+Após determinar o representante, esta parte novamente do nó passado como argumento e altera o representante de forma recursiva para o anteriormente determinado até chegar a este novamente.
+Desta forma, o caminho para o representante é simplificado e as chamadas posteriores com o mesmo nó como argumento serão mais rápidas.
 
 \subsubsection{add\_edge}\label{sssec:addedge}
-Esta função tenta adicionar um arco entre um nó existente e uma palavra que pode não
-existir. Tem também a função de implementar os aspetos da estrutura de dados
-\foreign{Union-Find}. Ela começa por procurar a \foreign{string} dada no grafo,
-retornando se não
-a encontrar. Caso contrário, procura o segundo nó na lista de adjacência do primeiro e
-retorna se for o caso, para garantir que o arco não é duplicado. Podendo agora adicionar
-o arco, é incrementado o contador de arcos da tabela e são adicionados nós de adjacência
-às tabelas de adjacência das palavras. A função \verb|insert_edge| trata de alocar o nó
-de adjacência para cada vértice e de os colocar nas listas respetivas. Agora a função
-trata de executar a operação \foreign{Union} entre os conjuntos (componentes conexos)
-de cada vértice. Primeiro são determinados os representantes de cada um através da função
-\verb|find_representative| vista anteriormente. Se estes forem diferentes, a operação
-ocorre. Para minimizar o tamanho do caminho de representantes, o nó com menos vértices
-na altura da operação é escolhido como o representante do novo componente conexo. Final%
-mente, são somados os numeros de vértices e arcos, é decrementado o número de componentes
-e é atualizado o tamanho do maior componente.
+Esta função tenta adicionar um arco entre um nó existente e uma palavra que pode não existir, para além de implementar os aspetos da estrutura de dados \textit{Union-Find}.
+Esta começa por procurar a \textit{string} dada no grafo, retornando caso não a encontre. Caso contrário, procura o segundo nó na lista de adjacência do primeiro e retorna se for o caso, para garantir que o arco não é duplicado.
+Ao adicionar o arco, é incrementado o contador de arcos da tabela e são adicionados nós de adjacência às tabelas de adjacência das palavras.
+
+A função \verb|insert_edge| trata de alocar o nó de adjacência para cada vértice e de os colocar nas listas respetivas. Neste sentido, a função trata de executar a operação \foreign{Union} entre os conjuntos (componentes conexos) de cada vértice.
+Primeiro, são determinados os representantes de cada um através da função
+\verb|find_representative| vista anteriormente. Se estes forem diferentes, a operação ocorre. Para minimizar o tamanho do caminho de representantes, o nó com menos vértices na altura da operação é escolhido como o representante do novo componente conexo. Finalmente, são somados os numeros de vértices e arcos, é decrementado o número de componentes e é atualizado o tamanho do maior componente.
 
 \subsubsection{breadh\_first\_search}
-A função \verb|breadh_first_search|, cujos argumentos são o número máximo de vértices, uma lista de vértices, o array de origem e o ponto de destino, tem como objetivo retornar o número de vértices visitados. Esta implementa o algoritmo \textit{Breadth-first search}, que permite procurar um node específico numa árvore.
+A função \verb|breadh_first_search|, cujos argumentos são o número máximo de vértices, uma lista de vértices, o array de origem e o ponto de destino, tem como objetivo retornar o número de vértices visitados. Esta implementa o algoritmo \textit{Breadth-first search}, que permite procurar um nó específico numa árvore.
 
-Em primeiro lugar, é efetuada uma chamada à função \verb|allocate_ptr_deque| -- que devolve uma \textit{deque} --, e uma chamada à função \verb|deque_put_hi|, que aceita como parâmetros de entrada a \textit{deque} e o array de origem. De seguida, dentro de um ciclo \verb|while| onde o tamanho da \textit{deque} é positivo, é incrementado os valores de \verb|visited| e \verb|list_len|, e, num ciclo \verb|for|, são atualizados os valores e endereços de \verb|vertex->visited| e \verb|vertex->previous|.
+Inicialmente, é efetuada uma chamada à função \verb|allocate_ptr_deque| -- que devolve uma \textit{deque} --, e uma chamada à função \verb|deque_put_hi|, que aceita como parâmetros de entrada a \textit{deque} e o array de origem. De seguida, dentro de um ciclo \verb|while| onde o tamanho da \textit{deque} é positivo, é incrementado os valores de \verb|visited| e \verb|list_len|, e, num ciclo \verb|for|, são atualizados os valores e endereços de \verb|vertex->visited| e \verb|vertex->previous|.
 
 \subsection{Funções de \textit{deque}}
 \subsubsection{allocate\_ptr\_deque}
