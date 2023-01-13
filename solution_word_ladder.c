@@ -522,7 +522,7 @@ static void similar_words(hash_table_t *hash_table,hash_table_node_t *from)
 // returns the number of vertices visited; if the last one is goal, following the previous links gives the shortest path between goal and origin
 //
 
-static unsigned int breadh_first_search(unsigned int maximum_number_of_vertices,hash_table_node_t **list_of_vertices,hash_table_node_t *origin,hash_table_node_t *goal)
+static int breadh_first_search(unsigned int maximum_number_of_vertices,hash_table_node_t **list_of_vertices,hash_table_node_t *origin,hash_table_node_t *goal)
 {	
 	unsigned int		list_len;
 	hash_table_node_t	*node;
@@ -550,16 +550,11 @@ static unsigned int breadh_first_search(unsigned int maximum_number_of_vertices,
 				link->vertex->previous = node;
 				queue_put_hi(queue, link->vertex);	
 			}
-			else if ((node->visited + 1) < link->vertex->visited)
-			{
-				link->vertex->visited = node->visited + 1;
-				link->vertex->previous = node;
-			}
 		}
 	}
 	free_ptr_queue(queue);
 	if (goal && goal != node)
-		return 0;
+		return -1;
 	return list_len;
 }
 
@@ -623,13 +618,12 @@ static int connected_component_diameter(hash_table_node_t *node)
 			comp_nodes[j]->visited = -1;
 		node_list = calloc(node->representative->number_of_vertices, sizeof(hash_table_node_t *));
 		search_len = breadh_first_search(node->representative->number_of_vertices, node_list, comp_nodes[i], NULL);
-		for (j = 0; j < search_len; j++)
-			if (node_list[j]->visited >= diameter)
-			{
-				diameter = node_list[j]->visited;
-				chain_start = comp_nodes[i];
-				chain_end = node_list[j];
-			}
+		if (node_list[search_len - 1]->visited >= diameter)
+		{
+			diameter = node_list[search_len - 1]->visited;
+			chain_start = comp_nodes[i];
+			chain_end = node_list[search_len - 1];
+		}
 		free(node_list);
 	}
 	if (diameter > largest_diameter)
@@ -654,7 +648,7 @@ static int connected_component_diameter(hash_table_node_t *node)
 static void path_finder(hash_table_t *hash_table,const char *from_word,const char *to_word)
 {
 	hash_table_node_t	*from, *to;
-	size_t				i, list_len;
+	int					i, list_len;
 
 	// switch from with to in order to print path in correct order
 	from = find_word(hash_table, from_word, 0);
@@ -673,14 +667,14 @@ static void path_finder(hash_table_t *hash_table,const char *from_word,const cha
 
 	mark_all_vertices(hash_table);
 	list_len = breadh_first_search(find_representative(to)->number_of_vertices, NULL, to, from);
-	if (list_len == 0)
+	if (list_len == -1)
 		fprintf(stderr, "Words are not connected\n");
 	else
 	{
 		i = 0;
 		for(; from && from != to; from = from->previous)
-			printf("  [%zu] %s\n", i++, from->word);
-		printf("  [%zu] %s\n", i++, from->word);
+			printf(" [%d] %s\n", i++, from->word);
+		printf(" [%d] %s\n", i++, from->word);
 	}
 }
 
@@ -758,7 +752,7 @@ int main(int argc,char **argv)
 	printf("Largest diameter: %d, from component: %s\n", largest_diameter, find_representative(largest_diameter_example[0])->word);
 	printf("Largest word chain:\n");
 	for(i=0; i < (unsigned int)largest_diameter; i++)
-		printf("	[%d] %s\n", i, largest_diameter_example[i]->word);
+		printf(" [%d] %s\n", i, largest_diameter_example[i]->word);
 	// ask what to do
 	for(;;)
 	{
