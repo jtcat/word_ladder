@@ -168,7 +168,7 @@ Cria um novo nó de \textit{hash table} com a palavra fornecida como argumento. 
 
 \subsubsection{find\_word}
 Função dedicada à procura e inserção de elementos na \foreign{hash table}. 
-É calculado o índice, que resulta do resto da divisão entre o resultado da aplicação da \foreign{hash function} à palavra desejada (ver secção \ref{sssec:crc32}) e o tamanho máximo da tabela. Esta operação distribui o indice da palavra entre 0 e o tamaho da tabela. De seguida, a função itera sobre a lista ligada na posição calculada, procurando um nó igual através da função \verb|strcmp|, e retorna-o se for o caso.
+É calculado o índice, que resulta do resto da divisão entre o resultado da aplicação da \foreign{hash function} à palavra desejada e o tamanho máximo da tabela. Esta operação distribui o indice da palavra entre 0 e o tamaho da tabela. De seguida, a função itera sobre a lista ligada na posição calculada, procurando um nó igual através da função \verb|strcmp|, e retorna-o se for o caso.
 Caso a palavra não exista e a opção \verb|insert_if_not_found| seja verdadeira, o programa aloca um novo nó para a palavra através da função \verb|create_word_node| e coloca-o na lista ligada, atualizando os valores estatísticos na \foreign{hash table}.
 
 \subsubsection{similar\_words}
