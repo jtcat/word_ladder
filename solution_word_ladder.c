@@ -70,9 +70,9 @@
 typedef struct adjacency_node_s  adjacency_node_t;
 typedef struct hash_table_node_s hash_table_node_t;
 typedef struct hash_table_s      hash_table_t;
-typedef struct ptr_deque_s 		 ptr_deque_t;
+typedef struct ptr_queue_s 		 ptr_queue_t;
 
-struct ptr_deque_s
+struct ptr_queue_s
 {
 	void 			**circular_array;
 	unsigned int	hi;
@@ -117,56 +117,56 @@ struct hash_table_s
 };
 
 //
-// allocation and deallocation of deque
+// allocation and deallocation of queue
 //
 
-static ptr_deque_t *allocate_ptr_deque(unsigned int max_size)
+static ptr_queue_t *allocate_ptr_queue(unsigned int max_size)
 {
-	ptr_deque_t	*deque = (ptr_deque_t *)malloc(sizeof(ptr_deque_t));
-	if(deque == NULL)
+	ptr_queue_t	*queue = (ptr_queue_t *)malloc(sizeof(ptr_queue_t));
+	if(queue == NULL)
 	{
-		fprintf(stderr,"allocate_ptr_deque: out of memory\n");
+		fprintf(stderr,"allocate_ptr_queue: out of memory\n");
 		exit(1);
 	}
-	deque->circular_array = (void **)malloc(sizeof(void *) * max_size);
-	if(deque->circular_array == NULL)
+	queue->circular_array = (void **)malloc(sizeof(void *) * max_size);
+	if(queue->circular_array == NULL)
 	{
-		fprintf(stderr,"allocate_ptr_deque->circular_array: out of memory\n");
-		free(deque);
+		fprintf(stderr,"allocate_ptr_queue->circular_array: out of memory\n");
+		free(queue);
 		exit(1);
 	}
-	deque->max_size = max_size;
-	deque->size = 0;
-	deque->full = 0;
-	deque->hi = 0;
-	deque->lo = 0;
-	return deque;
+	queue->max_size = max_size;
+	queue->size = 0;
+	queue->full = 0;
+	queue->hi = 0;
+	queue->lo = 0;
+	return queue;
 }
 
-static void free_ptr_deque(ptr_deque_t *deque)
+static void free_ptr_queue(ptr_queue_t *queue)
 {
-	free(deque->circular_array);
-	free(deque);
+	free(queue->circular_array);
+	free(queue);
 }
 
 //
-// deque methods
+// queue methods
 //
 
-static void deque_put_hi(ptr_deque_t *deque, void *ptr)
+static void queue_put_hi(ptr_queue_t *queue, void *ptr)
 {
-	assert(deque->size < deque->max_size);
-	deque->circular_array[deque->hi] = ptr;
-	deque->hi = (deque->hi + 1) % deque->max_size;
-	deque->size++;
+	assert(queue->size < queue->max_size);
+	queue->circular_array[queue->hi] = ptr;
+	queue->hi = (queue->hi + 1) % queue->max_size;
+	queue->size++;
 }
 
-static void *deque_get_lo(ptr_deque_t *deque)
+static void *queue_get_lo(ptr_queue_t *queue)
 {
-	assert(deque->size > 0);
-	void *ret = deque->circular_array[deque->lo];
-	deque->lo = (deque->lo + 1) % deque->max_size;
-	deque->size--;
+	assert(queue->size > 0);
+	void *ret = queue->circular_array[queue->lo];
+	queue->lo = (queue->lo + 1) % queue->max_size;
+	queue->size--;
 	return ret;
 }
 
@@ -527,15 +527,15 @@ static unsigned int breadh_first_search(unsigned int maximum_number_of_vertices,
 	unsigned int		list_len;
 	hash_table_node_t	*node;
 	adjacency_node_t	*link;
-	ptr_deque_t 		*deque;
+	ptr_queue_t 		*queue;
 
-	deque = allocate_ptr_deque(maximum_number_of_vertices);
+	queue = allocate_ptr_queue(maximum_number_of_vertices);
 
 	list_len = 0;
-	deque_put_hi(deque, origin);
-	while (deque->size > 0)
+	queue_put_hi(queue, origin);
+	while (queue->size > 0)
 	{
-		node = deque_get_lo(deque);
+		node = queue_get_lo(queue);
 		node->visited++;
 		if (list_of_vertices)
 			list_of_vertices[list_len] = node;
@@ -548,7 +548,7 @@ static unsigned int breadh_first_search(unsigned int maximum_number_of_vertices,
 			{
 				link->vertex->visited = node->visited;
 				link->vertex->previous = node;
-				deque_put_hi(deque, link->vertex);	
+				queue_put_hi(queue, link->vertex);	
 			}
 			else if ((node->visited + 1) < link->vertex->visited)
 			{
@@ -557,7 +557,7 @@ static unsigned int breadh_first_search(unsigned int maximum_number_of_vertices,
 			}
 		}
 	}
-	free_ptr_deque(deque);
+	free_ptr_queue(queue);
 	if (goal && goal != node)
 		return 0;
 	return list_len;
