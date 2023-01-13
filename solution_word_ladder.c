@@ -187,18 +187,13 @@ static adjacency_node_t *allocate_adjacency_node(void)
 	return node;
 }
 
-static void free_adjacency_node(adjacency_node_t *node)
-{
-	free(node);
-}
-
 static void free_adjacency_llist(adjacency_node_t *head)
 {
 	adjacency_node_t *next;
 	for (; head; head = next)
 	{
 		next = head->next;
-		free_adjacency_node(head);
+		free(head);
 	}
 }
 
@@ -269,6 +264,11 @@ static hash_table_t *hash_table_create(void)
 		exit(1);
 	}
 	hash_table->heads = (hash_table_node_t **)calloc(_hash_table_init_size_, sizeof(hash_table_node_t *));
+	if(hash_table->heads == NULL)
+	{
+		fprintf(stderr,"create_hash_table: out of memory for array\n");
+		exit(1);
+	}
 	hash_table->hash_table_size = _hash_table_init_size_;
 	return hash_table;
 }
@@ -405,9 +405,6 @@ static void add_edge(hash_table_t *hash_table,hash_table_node_t *from,const char
 	if (!to)
 		return;
 	for (link = from->head; link && link->vertex != to; link = link->next);
-	if (link)
-		return;
-	for (link = to->head; link && link->vertex != from; link = link->next);
 	if (link)
 		return;
 	hash_table->number_of_edges++;
