@@ -215,6 +215,10 @@ A função \verb|breadh_first_search|, cujos argumentos são o número máximo d
 
 Em primeiro lugar, é efetuada uma chamada à função \verb|allocate_ptr_deque| -- que devolve uma \textit{deque} --, e uma chamada à função \verb|deque_put_hi|, que aceita como parâmetros de entrada a \textit{deque} e o array de origem. De seguida, dentro de um ciclo \verb|while| onde o tamanho da \textit{deque} é positivo, é incrementado os valores de \verb|visited| e \verb|list_len|, e, num ciclo \verb|for|, são atualizados os valores e endereços de \verb|vertex->visited| e \verb|vertex->previous|.
 
+\subsection{Funções de \textit{deque}}
+\subsubsection{allocate\_ptr\_deque}
+Esta função aloca memória para uma \textit{deque} de ponteiros. [Continuar]
+
 \pagebreak
 \section{Verificação de \textit{memory leaks}}
 Para verificar se existem \textit{memory leaks} no programa criado, foi utilizado o \foreign{Valgrind}, um programa constituído por um conjunto de ferramentas para a deteção de erros de memória e de \foreign{threading}. Para o efeito, foi utilizado o \foreign{Memcheck}, que é uma ferramenta para deteção de erros de memória.
