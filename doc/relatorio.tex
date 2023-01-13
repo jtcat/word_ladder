@@ -217,7 +217,13 @@ Em primeiro lugar, é efetuada uma chamada à função \verb|allocate_ptr_deque|
 
 \subsection{Funções de \textit{deque}}
 \subsubsection{allocate\_ptr\_deque}
-Esta função aloca memória para uma \textit{deque} de ponteiros. [Continuar]
+Esta função aloca memória para uma \textit{deque} de ponteiros, que inclui um \textit{array} circular e alguns valores associados, tais como tamanhos e índices. Por fim, é retornado um ponteiro para a \textit{deque} alocada.
+
+\subsubsection{deque\_put\_hi}
+A função \verb|deque_put_hi|, que aceita como parâmetros de entrada uma \textit{deque} e um ponteiro para um vértice, adiciona o ponteiro à \textit{deque} e atualiza os valores associados.
+
+\subsubsection{deque\_get\_lo}
+Esta função aceita como parâmetro de entrada uma \textit{deque}, remove o primeiro elemento desta, atualiza os valores associados e retorna o elemento removido.
 
 \pagebreak
 \section{Verificação de \textit{memory leaks}}
