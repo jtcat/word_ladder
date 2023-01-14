@@ -5,6 +5,8 @@
 //
 // Place your student numbers and names here
 //   N.Mec. 93096  Name: João Catarino
+//   N.Mec. 107927 Name: Rúben Garrido
+//   N.Mec. 107283 Name: Nuno Vieira
 //
 // Do as much as you can
 //   1) MANDATORY: complete the hash table code
@@ -700,12 +702,18 @@ static void component_info(hash_table_t *hash_table, char *word)
 
 static void graph_info(hash_table_t *hash_table)
 {
-	printf("\nNodes: %u\nEdges: %u\nEdge nodes: %u\nComponents: %u\nLargest Component: %u\n",
+	printf("\nGraph info:\n\nNodes\t\t\t: %u\nEdges\t\t\t: %u\nEdge nodes\t\t: %u\nComponents\t\t: %u\n\
+Largest component size	: %u\nLargest component\t: %s\nLargest diameter\t: %d\n",
 			hash_table->number_of_entries,
 			hash_table->number_of_edges,
 			hash_table->number_of_edge_nodes,
 			hash_table->number_of_components,
-			hash_table->largest_component_size);
+			hash_table->largest_component_size,
+			find_representative(largest_diameter_example[0])->word,
+			largest_diameter);
+	printf("Largest word chain:\n");
+	for(unsigned int i=0; i < (unsigned int)largest_diameter; i++)
+		printf(" [%d] %s\n", i, largest_diameter_example[i]->word);
 }
 
 
@@ -749,11 +757,7 @@ int main(int argc,char **argv)
 				rep->component_diameter = connected_component_diameter(node);
 			}
 		}
-	printf("Largest diameter: %d, from component: %s\n", largest_diameter, find_representative(largest_diameter_example[0])->word);
-	printf("Largest word chain:\n");
-	for(i=0; i < (unsigned int)largest_diameter; i++)
-		printf(" [%d] %s\n", i, largest_diameter_example[i]->word);
-	// ask what to do
+		// ask what to do
 	for(;;)
 	{
 		fprintf(stderr,"\nYour wish is my command:\n");

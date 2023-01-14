@@ -165,7 +165,7 @@ os membros da lista ligada e liberta cada um deles.
 \subsubsection{create\_word\_node}
 Cria um novo nó de \textit{hash table} com a palavra fornecida como argumento. Este nó, cuja memória alocada é obtida através da função \verb|allocate_hash_table_node|, é inicializado com a palavra e alguns parâmetros predefinidos. Por fim, a função retorna o endereço do \textit{node} recém-criado.
 
-\subsection{Funções de grafo}
+\subsection{Funções de manipulação de grafo}
 
 \subsubsection{find\_word}
 Função dedicada à procura e inserção de elementos na \foreign{hash table}. 
@@ -191,14 +191,70 @@ A função \verb|insert_edge| trata de alocar o nó de adjacência para cada vé
 Primeiro, são determinados os representantes de cada um através da função
 \verb|find_representative| vista anteriormente. Se estes forem diferentes, a operação ocorre. Para minimizar o tamanho do caminho de representantes, o nó com menos vértices na altura da operação é escolhido como o representante do novo componente conexo. Finalmente, são somados os numeros de vértices e arcos, é decrementado o número de componentes e é atualizado o tamanho do maior componente.
 
+\subsection{Funções de estudo de grafo}
+
 \subsubsection{breadh\_first\_search}
-A função \verb|breadh_first_search|, cujos argumentos são o número máximo de vértices, uma lista de vértices, o array de origem e o ponto de destino, tem como objetivo retornar o número de vértices visitados. Se for especificado o destino, será possível obter o 
+A função \verb|breadh_first_search|, cujos argumentos são o número máximo de vértices, uma
+lista de vértices, o array de origem e o ponto de destino, tem como objetivo retornar o
+número de vértices visitados. Se for especificado o destino, será possível obter o 
 caminho mais curto até este seguindo recursivamente o seu ponteiro \verb|previous|. Para
 este efeito, é utilizado o algoritmo \textit{Breadth-first search}. Este percorre uma
 árvore nivel a nivel, garantindo o menor percurso para cada nó visitado. Foi implementada para este caso
-uma \foreign{queue} circular, de forma a garantir que o tamanho máximo desta é constante.
+uma \foreign{queue} circular, que garante que o tamanho máximo desta é constante.
 
-Em primeiro lugar, é efetuada uma chamada à função \verb|allocate_ptr_queue| -- que devolve uma \textit{queue} --, e uma chamada à função \verb|queue_put_hi|, que aceita como parâmetros de entrada a \textit{queue} e o array de origem. De seguida, dentro de um ciclo \verb|while| onde o tamanho da \textit{queue} é positivo, é incrementado os valores de \verb|visited| e \verb|list_len|, e, num ciclo \verb|for|, são atualizados os valores e endereços de \verb|vertex->visited| e \verb|vertex->previous|.
+Em primeiro lugar, é efetuada uma chamada à função \verb|allocate_ptr_queue| -- que devolve
+uma \textit{queue} --, e uma chamada à função \verb|queue_put_hi|, que insere o nó de partida
+na \foreign{queue}. De seguida, dentro de um ciclo \verb|while|, a função visita todos os nós
+na \foreign{queue}, retirando-os do ínicio da \foreign{queue}. A sua variável \verb|visited| é incrementada
+para marcar o nó como visitado e e este é colocado na lista de nós visitados. Por cada nó visitado,
+são adicionados os seus nós adjacentes por visitar ao final da \foreign{queue}, guardando neles
+o valor do nó visitado em \verb|previous|, bem como a profundidade do nível anterior em \verb|visited|.
+Ao terminar a iteração, a função retorna -1 caso não tenha encontrado o destino (se for fornecido). Caso
+contrário, devolve o comprimento da lista de nós visitados.
+
+Nota importante: o valor \verb|visited| nesta implementação guarda a distância do nó até à raiz. Isto é
+útil na determinação do diâmetro na função \verb|connected_component_diameter|, por tornar desnecessário
+percorrer o caminho entre o nó de partida e o nó destino para calcular a distância.
+
+\subsubsection{path\_finder}
+Esta função tenta determinar o caminho mais curto entre duas palavras (uma \foreign{word ladder})
+, imprimindo a sequência. Para tal, em primeiro lugar, é necessário obter os nós associados a
+cada palavra, utilizando a função \verb|find_word|. Caso um não exista, é impressa uma mensagem
+de erro. Depois, todos os nós da tabela de \foreign{hash} são marcados como não visitados (
+variável \verb|visited| de cada nó posta a -1). O grafo está agora pronto para ser estudado. É
+chamada a função \verb|breadh_first_search| com o argumento \verb|list_of_vertices| nulo, visto
+que o caminho será obtido ao seguir os ponteiros \verb|previous| a partir do destino. Como o
+caminho obtido desta forma será invertido, ou seja, irá da palavra destino até à de partida, 
+a função anterior é chamada com os argumentos \verb|from_word| e \verb|to_word| alternados. Esta
+chamada devolve -1 caso as palavras não estiverem ligadas, e é impresso uma mensagem de erro
+neste caso. Caso contrário, o caminho existe e é impresso seguindo o ponteiro \verb|previous|
+do nó \verb|from_word| até que seja nulo.
+
+\subsubsection{component\_info}
+Função que imprime dados de um componente conexo associado a uma palavra dada como argumento.
+Primeiro verifica que a palavra existe e depois obtém o nó representante do seu componente
+conexo. Este contém os dados atualizados do componente. São impressos a palavra representante,
+o número de vértices, o número de laços e o diâmetro do componente.
+
+\subsubsection{graph\_info}
+Imprime a seguinte informação sobre o grafo: o número de nós, o número de laços, o número de
+nós de adjacência (apenas para verificar que são exatamente o dobro do número de laços), o
+número de componentes conexos, o tamanho do maior componente, o maior diâmetro do grafo e a 
+maior \foreign{word ladder} correspondente.
+
+\subsubsection{connected\_component\_diameter}
+Determina o diâmetro do componente conexo ao qual o nó dado pertence. Atualiza o valor máximo
+global, bem como o caminho respetivo se for o caso. Para tal, a função itera sobre todos
+os nós do componente conexo, determina as suas excentricidades e guarda a maior econtrada.
+Em termos práticos, isto significa, em primeiro lugar, obter uma lista de todos os nós através
+da função \verb|breadh_first_search|. Por cada nó, é feita uma procura com a função \verb|breadh|
+partindo deste. Como esta função percorre o grafo nível a nível, o último nó inserido na lista de
+nós visitados econtra-se no nível mais profundo, e portanto será um dos nós mais distantes do anterior.
+Se a distância ao último nó da lista, obtido a partir da váriável \verb|visited|, for a maior determinada
+até agora, é guardada. O último valor a ser guardado após todas as pesquisas a partir de todos os
+vértices, é o diâmetro do componente conexo. Tendo determinado o diâmetro, a função verifica se este
+é o maior a nível global, guardando o seu valor e o seu caminho associado.
+
 
 \subsection{Funções de \textit{queue}}
 \subsubsection{allocate\_ptr\_queue}
@@ -219,7 +275,9 @@ caso um ponteiro, é adicionado ao final da fila. A função começa por executa
 é inserido o novo elemento na posição \foreign{hi}. Este valor não representa na
 verdade o final da fila, mas sim a posição imediatamente asseguir. O valor é agora
 incrementado e assume o valor do resto da sua divisão pelo tamanho máximo da 
-\foreign{queue}. Isto implica que para valores menores que o maior índice possível, \foreign{hi} mantem-se, caso contrário, volta à posição 0, garantindo a circularidade.
+\foreign{queue}. Isto implica que para valores menores que o maior índice possível,
+\foreign{hi} mantem-se, caso contrário, volta à posição 0, garantindo a circularidade.
+Finalmente, o tamanho da fila é incrementado.
 
 \subsubsection{queue\_get\_lo}
 Implementação da operação \foreign{dequeue}, onde o elemento inicial da fila é
@@ -228,35 +286,31 @@ que o programa não tenta remover um elemento de uma fila vazia. De seguida, o v
 na posição \foreign{lo} é guardado numa variável temporária. Isto é feito porque
 o inicio da fila pode ``saltar'' para o outro lado após a sua incrementação. Tendo
 o valor guardado, é atualizada a posição \foreign{lo} da mesma forma como na função
-\verb|queue\_put\_hi|. No final, é devolvido o valor guardado.
+\verb|queue\_put\_hi|, e é decrementado o tamanho da fila. No final, é devolvido o
+valor guardado.
 
 \section{\textit{Word ladders} interessantes}
-\subsection{Palavras com 4 letras}
-A maior \textit{word ladder} encontrada ocorre entre as palavras ``Kong'' e ``está'':
-\begin{multicols}{4}
-	\begin{enumerate}
-		\itemsep 0em
-		\item Kong
-		\item King
-		\item Ping
-		\item Pina
-		\item tina
-		\item tino
-		\item tipo
-		\item aipo
-		\item arpo
-		\item arpe
-		\item arte
-		\item ante
-		\item ente
-		\item este
-		\item está
-	\end{enumerate}
-\end{multicols}
 
-\noindent Outras \textit{word ladders} interessantes com 4 letras são:
+\begin{multicols}{2}
 \begin{itemize}
-	\item Entre as palavras ``novo'' e ``byte'':
+\item De ``Terra'' a ``Marte'':
+	\begin{enumerate}
+		\item Terra
+		\item perra
+		\item parra
+		\item parta
+		\item parte
+		\item Marte
+	\end{enumerate}
+\item Do ``tudo'' ao ``nada'':
+	\begin{enumerate}
+		\item tudo
+		\item todo
+		\item nodo
+		\item nado
+		\item nada
+	\end{enumerate}
+\item Entre as palavras ``novo'' e ``byte'':
 	\begin{enumerate}
 		\itemsep 0em
 		\item novo
@@ -268,7 +322,6 @@ A maior \textit{word ladder} encontrada ocorre entre as palavras ``Kong'' e ``es
 	\item Entre as palavras ``bege'' e ``ouro'':
 	\begin{enumerate}
 		\itemsep 0em
-		\begin{multicols}{2}
 			\item bege
 			\item rege
 			\item ruge
@@ -276,114 +329,107 @@ A maior \textit{word ladder} encontrada ocorre entre as palavras ``Kong'' e ``es
 			\item mure
 			\item oure
 			\item ouro
-		\end{multicols}
 	\end{enumerate}
 \end{itemize}
-
-\subsection{Palavras com 5 letras}
-A maior \textit{word ladder} encontrada ocorre entre as palavras ``fo-la'' e ``expõe'':
-\begin{multicols}{4}
-	\begin{enumerate}
-		\itemsep 0em
-		\item fo-la
-		\item fá-la
-		\item dá-la
-		\item dê-la
-		\item vê-la
-		\item vi-la
-		\item viela
-		\item viera
-		\item vibra
-		\item fibra
-		\item fiara
-		\item fiava
-		\item flava
-		\item alava
-		\item atava
-		\item ativa
-		\item atira
-		\item afira
-		\item afila
-		\item axila
-		\item exila
-		\item exala
-		\item exara
-		\item extra
-		\item entra
-		\item entro
-		\item então
-		\item estão
-		\item estio
-		\item espio
-		\item expio
-		\item expie
-		\item expõe
-	\end{enumerate}
 \end{multicols}
+\pagebreak
 
-\subsection{Palavras com 6 letras}
-A maior \textit{word ladder} encontrada ocorre entre as palavras ``enrugo'' e ``zelote'':
-\begin{multicols}{4}
-	\begin{enumerate}
-		\itemsep 0em
-		\item enrugo
-		\item enxugo
-		\item enxuto
-		\item enluto
-		\item enlato
-		\item engato
-		\item engano
-		\item encano
-		\item enceno
-		\item enceto
-		\item exceto
-		\item expeto
-		\item espeto
-		\item aspeto
-		\item asseto
-		\item asseta
-		\item asseda
-		\item assada
-		\item ossada
-		\item ousada
-		\item ourada
-		\item ourava
-		\item curava
-		\item corava
-		\item cotava
-		\item citava
-		\item oitava
-		\item optava
-		\item optada
-		\item optado
-		\item opiado
-		\item odiado
-		\item adiado
-		\item adindo
-		\item alindo
-		\item alando
-		\item amando
-		\item amanso
-		\item amasso
-		\item amasse
-		\item alasse
-		\item classe
-		\item coasse
-		\item doasse
-		\item doa-se
-		\item dou-se
-		\item vou-se
-		\item viu-se
-		\item vir-se
-		\item virose
-		\item viroso
-		\item piroso
-		\item piloso
-		\item piloto
-		\item pilote
-		\item pelote
-		\item zelote
-	\end{enumerate}
+\subsection{Maior \foreign{word ladder} encontrada}
+\begin{multicols}{3}
+\begin{enumerate}
+	\item visse-te
+	\item viste-te
+	\item veste-te
+	\item deste-te
+	\item despe-te
+	\item desperte
+	\item desperto
+	\item desporto
+	\item desponto
+	\item desponte
+	\item desconte
+	\item descente
+	\item descende
+	\item descenda
+	\item despenda
+	\item despensa
+	\item dispensa
+	\item dispenso
+	\item distenso
+	\item distendo
+	\item distando
+	\item discando
+	\item riscando
+	\item rascando
+	\item lascando
+	\item lassando
+	\item passando
+	\item pastando
+	\item bastando
+	\item bastardo
+	\item bastarda
+	\item bastaria
+	\item bostaria
+	\item tostaria
+	\item tontaria
+	\item contaria
+	\item coutaria
+	\item chutaria
+	\item chuparia
+	\item chaparia
+	\item chavaria
+	\item cravaria
+	\item crivaria
+	\item privaria
+	\item provaria
+	\item proveria
+	\item preveria
+	\item preteria
+	\item preteris
+	\item preteres
+	\item premeres
+	\item tremeres
+	\item tremares
+	\item tramares
+	\item aramares
+	\item afamares
+	\item afanares
+	\item afinares
+	\item afilares
+	\item axilares
+	\item exilares
+	\item exalares
+	\item exarares
+	\item exararas
+	\item exaradas
+	\item exarados
+	\item exaramos
+	\item exaremos
+	\item extremos
+	\item entremos
+	\item enteemos
+	\item enfeemos
+	\item enfermos
+	\item enfermas
+	\item enformas
+	\item enfornas
+	\item encornas
+	\item encarnas
+	\item escarnas
+	\item escarpas
+	\item escalpas
+	\item escaldas
+	\item escaldar
+	\item espaldar
+	\item espalhar
+	\item espalhas
+	\item espelhas
+	\item espelhos
+	\item espelhou
+	\item espalhou
+	\item empalhou
+	\item empaleou
+\end{enumerate}
 \end{multicols}
 
 \section{Verificação de \textit{memory leaks}}
