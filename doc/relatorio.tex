@@ -433,6 +433,19 @@ valor guardado.
 \end{enumerate}
 \end{multicols}
 
+\section{Estatísticas acerca das estruturas de dados}
+Usando o ficheiro \verb|wordlist-big-latest.txt| como argumento, foram obtidas as seguintes estatísticas acerca da \textit{hash table}, bem como dos grafos:
+\begin{itemize}
+	\item Número de entradas: 999282
+	\item Número de colisões: 209894
+	\item Tamanho da \textit{hash table}: 2048000
+	\item Número de nós: 999282
+	\item Número de vértices: 1060534
+	\item Número de nós de vértices: 2121068
+	\item Número de componentes conectados: 377234
+	\item Tamanho do maior componente conectado: 16698
+\end{itemize}
+
 \section{Verificação de \textit{memory leaks}}
 Para verificar se existem \textit{memory leaks} no programa criado, foi utilizado o \foreign{Valgrind}, um programa constituído por um conjunto de ferramentas para a deteção de erros de memória e de \foreign{threading}. Para o efeito, foi utilizado o \foreign{Memcheck}, que é uma ferramenta para deteção de erros de memória.
 
@@ -466,7 +479,6 @@ Your wish is my command:
 
 Assim, concluímos que não existem \textit{memory leaks} no programa. 
 
-\pagebreak
 \section{Análise do incremento da \textit{hash table}}
 Por padrão, o tamanho inicial da \textit{hash table} é 1000. No entanto, quando o número de entradas começa a ser significativo, começam a surgir colisões, o que implica uma perca da complexidade computacional \begin{math}O(1)\end{math}. Para evitar este problema, quando o rácio entre o tamanho da \textit{hash table} e o número de colisões é superior a 5, o tamanho da \textit{hash table} é incrementado, através da função \verb|hash_table_grow|, que recebe como argumento a referida \textit{hash table}.
 
