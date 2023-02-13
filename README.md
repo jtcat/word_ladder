@@ -1,4 +1,4 @@
-# word_ladder - Final project for the Operating Systems subject
+# word_ladder - Final project for the Algorithms and Data Structures subject
 
 Co-developed with https://github.com/RGarrido03
 
